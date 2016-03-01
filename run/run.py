@@ -38,7 +38,7 @@ params["Nsnaps"]=2  # the number of MD rounds
 params["Nsteps"]=1  # the number of MD steps per snap
 params["res"]="/projects/academic/alexeyak/ekadashi/devel/libra-qe_interface/run/res/" # the directory where the energies and NACs files will be printed out
 params["traj_file"] = params["res"]+"md.xyz"
-params["ene_file"] = params["res"]+"ene.xyz"
+params["ene_file"] = params["res"]+"ene.dat"
 
 
 ################################################################
