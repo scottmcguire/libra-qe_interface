@@ -1,6 +1,0 @@
-SLURM_JOBID=294435
-SLURM_JOB_NODELIST=cpn-p27-15
-SLURM_NNODES=1
-SLURMTMPDIR=/scratch/294435
-working directory=/projects/academic/alexeyak/ekadashi/devel/libra-qe_interface/run
-NPROCS=1
