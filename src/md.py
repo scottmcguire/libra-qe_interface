@@ -15,10 +15,12 @@
 # Used in : main.py/
 
 
-from create_gamess_input import *
+#from create_gamess_input import *
+from create_espresso_input import *
 #from create_pdb_file import *
 #from exe_gamess import *
-from gamess_to_libra import *
+#from gamess_to_libra import *
+from espresso_to_libra import *
 
 import os
 import sys
@@ -43,21 +45,19 @@ from LoadPT import * # Load_PT
 
 ##############################################################
 
-
-def exe_gamess(params):
+def exe_espresso(params):
     ##
-    # This is a function that call GAMESS execution on the compute node
+    # This is a function that call QE execution on the compute node
     # \param[in] params Input data containing all manual settings and some extracted data.
     #
 
-    inp = params["gms_inp"]
-    out = params["gms_out"]
+    pw_exe = params["pw_exe"]
+    inp = params["qe_inp"]
+    out = params["qe_out"]
     nproc = params["nproc"]
     scr_dir = params["scr_dir"]
-    os.system("/usr/bin/time rungms.slurm %s 01 %s > %s" % (inp,nproc,out))
+    os.system("srun %s -n %s < %s > %s" % (pw_exe,nproc,inp,out))
 
-    os.system("rm *.dat")
-    os.system("rm -r %s/*" %(scr_dir))
 
 
 def run_MD(syst,ao,E,C,data,params):
@@ -117,13 +117,12 @@ def run_MD(syst,ao,E,C,data,params):
             mol.propagate_q(dt) 
           
             # ======= Compute forces and energies using GAMESS ============
-            write_gms_inp(data, params, mol)
-            exe_gamess(params)         
+            write_qe_inp(data, params, mol)
+            exe_espresso(params)         
+)            
+            Grad, data = espresso_to_libra(params, ij) # this will update AO and gradients
 
-#            ao, E, C, Grad, data = unpack_file(params["gms_out"])            
-            Grad, data = gamess_to_libra(params, ao, E, C, ij) # this will update AO and gradients
-
-            epot = data["tot_ene"]         # total energy from GAMESS
+            epot = data["tot_ene"]         # total energy from QE
             for k in xrange(syst.Number_of_atoms):
                 mol.f[3*k]   = -Grad[k][0]
                 mol.f[3*k+1] = -Grad[k][1]

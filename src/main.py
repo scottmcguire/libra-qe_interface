@@ -1,5 +1,5 @@
 #*********************************************************************************
-#* Copyright (C) 2016 Kosuke Sato, Alexey V. Akimov
+#* Copyright (C) 2016 Ekadashi Pradhan, Alexey V. Akimov
 #*
 #* This file is distributed under the terms of the GNU General Public License
 #* as published by the Free Software Foundation, either version 2 of
@@ -10,13 +10,13 @@
 #*********************************************************************************/
 
 ## \file main.py
-# This module defines the function which communicates the GAMESS output data
+# This module defines the function which communicates QUANTUM ESPRESSO output data
 # to Libra and vice versa.
 # It outputs the files needed for excited electron dynamics simulation.
 import sys
 
 # Path the the source code
-sys.path.insert(1,"/user/alexeyak/Programming/libra-gamess_interface/src")
+sys.path.insert(1,"/user/alexeyak/Programming/libra-qe_interface/src")
 
 cwd = "/projects/academic/alexeyak/alexeyak/libra-dev/libracode-code"
 print "Using the Libra installation at", cwd
@@ -30,10 +30,16 @@ sys.path.insert(1,cwd+"/_build/src/hamiltonian")
 import os
 import sys
 import math
-from gamess_to_libra import *
-from nve import *
-from create_gamess_input import *
+# Needs to be modified ** ekadashi
+#from gamess_to_libra import *
+#from espresso_to_libra import *
+#from nve import *
+#from create_espresso_input import *
+#from create_gamess_input import *
+# ***ekadashi
 
+def read_qe_input_template():
+    pass
 
 def main(params):
     ##
@@ -47,22 +53,24 @@ def main(params):
 
     ################# Step 0: Use the initial file to create a working input file ###############
  
-    os.system("cp %s %s" %(params["gms_inp0"], params["gms_inp"]))
+#    os.system("cp %s %s" %(params["gms_inp0"], params["gms_inp"]))
+    os.system("cp %s %s" %(params["qe_inp0"], params["qe_inp"]))
 
     ################# Step 1: Read initial input and run first GMS calculation ##################    
     
-    params["gms_inp_templ"] = read_gms_inp_templ(params["gms_inp"])
+#    params["gms_inp_templ"] = read_gms_inp_templ(params["gms_inp"])
+    params["qe_inp_templ"] = read_qe_inp_templ(params["qe_inp"])
 
-    exe_gamess(params)
+#    exe_espresso(params)
 
-    ao, E, C, Grad, data = unpack_file(params["gms_out"])
+#    Grad = unpack_file(params["qe_out"])
 
-    print data
+#    print data
 
     ################## Step 2: Initialize molecular system and run MD ###########################
 
-    print "Initializing system..."
-    syst = init_system(data, Grad)
+#    print "Initializing system..."
+#    syst = init_system(data, Grad)
 
-    print "Starting MD..."
-    run_MD(syst,ao,E,C,data,params)
+#    print "Starting MD..."
+#    run_MD(syst,ao,E,C,data,params)
