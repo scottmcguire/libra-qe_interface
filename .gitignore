@@ -1,0 +1,13 @@
+*.nfs*
+re_*
+im_*
+*.pyc
+*.py~
+*.xyz
+*.dat
+*.wfc*
+*.UPF
+*.xml
+*.md
+*.out
+
