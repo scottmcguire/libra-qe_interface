@@ -30,6 +30,10 @@ sys.path.insert(1,os.environ["libra_hamiltonian_path"])
 #from read_qe_inp_templ import*
 
 def read_qe_inp_templ(inp_filename):
+## 
+# Add the function documentation here...
+#
+
     f = open(inp_filename,"r")
     templ = f.readlines()
     f.close()
@@ -50,14 +54,14 @@ def read_qe_inp_templ(inp_filename):
 
 
 def main(params):
-    ##
-    # Finds the keywords and their patterns and extracts the parameters
-    # \param[in] params : the input data from "submit_templ.slm", in the form of dictionary
-    # This function prepares initial parameters from QUANTUM ESPRESSO output file
-    # and executes classical MD in Libra and Electronic Structure Calculation in QUANTUM ESPRESSO
-    # iteratively.
-    #
-    # Used in:  main.py
+##
+# Finds the keywords and their patterns and extracts the parameters
+# \param[in] params : the input data from "submit_templ.slm", in the form of dictionary
+# This function prepares initial parameters from QUANTUM ESPRESSO output file
+# and executes classical MD in Libra and Electronic Structure Calculation in QUANTUM ESPRESSO
+# iteratively.
+#
+# Used in:  main.py
 
     ################# Step 0: Use the initial file to create a working input file ###############
  

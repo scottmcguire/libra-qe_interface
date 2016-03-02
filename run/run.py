@@ -2,9 +2,6 @@ import os
 import sys
 import math
 
-from path_libra_lib import * # import path_libra_lib module
-import main # import main module of the libra-QE-interface code
-
 
 ################ System-specific settings ########################
 # For Alexey
@@ -18,9 +15,13 @@ res_dir =  "/user/alexeyak/Programming/libra-qe_interface/run/res/"
 #res_dir = "/projects/academic/alexeyak/ekadashi/devel/libra-qe_interface/run/res/"
 
 
-path_libra_lib(libra_bin_path)               # Path to the libra libraries
 os.environ["src_path"] = libra_qe_int_path   # Path to the source code
 sys.path.insert(1,os.environ["src_path"])    # Path to the source code
+
+from path_libra_lib import * # import path_libra_lib module
+path_libra_lib(libra_bin_path)               # Path to the libra libraries
+
+import main # import main module of the libra-QE-interface code
 
 
 
@@ -28,7 +29,6 @@ sys.path.insert(1,os.environ["src_path"])    # Path to the source code
 
 params = {}
 
-params["scr_dir"]=os.environ['SLURTMDIR']
 params["qe_inp0"] = "x.md.in"    # initial input file
 params["qe_inp"] = "x.md_wrk.in" # working input file 
 params["qe_out"] = "x.md.out"    # output file

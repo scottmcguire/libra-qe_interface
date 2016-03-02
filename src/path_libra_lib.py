@@ -1,5 +1,5 @@
 #*********************************************************************************
-#* Copyright (C) 2016 Ekadashi Pradhan, Alexey V. Akimov
+#* Copyright (C) 2016 Kosuke Sato, Alexey V. Akimov
 #*
 #* This file is distributed under the terms of the GNU General Public License
 #* as published by the Free Software Foundation, either version 2 of
@@ -35,5 +35,7 @@ def path_libra_lib(librapath):
             os.environ["libra_%s_path"%(d)] = librapath + "/" + d
             os.system("echo libra_%s_path = $libra_%s_path" %(d,d))
             #print d
+
+
 
     
