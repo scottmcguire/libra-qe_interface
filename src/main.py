@@ -32,6 +32,7 @@ from read_qe_inp_templ import*
 from exe_espresso import*
 #Import from unpack_file.py library
 from unpack_file import*
+from md import *
 
 def main(params):
 ##
@@ -52,17 +53,17 @@ def main(params):
     params["qe_inp_templ"] = read_qe_inp_templ(params["qe_inp"])
 
     exe_espresso(params)
-#    exe_espresso(params)
 
-#    Grad = unpack_file(params["qe_out"])
-    Grad = unpack_file(params["qe_out"])
+    Grad, data = unpack_file(params["qe_out"])
 
-#    print data
+    print data
 
     ################## Step 2: Initialize molecular system and run MD ###########################
 
-#    print "Initializing system..."
-#    syst = init_system(data, Grad)
+    print "Initializing system..."
+    syst = init_system(data, Grad)
+
+    syst.show_info()
 
 #    print "Starting MD..."
 #    run_MD(syst,ao,E,C,data,params)

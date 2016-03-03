@@ -47,9 +47,9 @@ def unpack_file(filename):
         coord_atoms.append(coord)
 
     data["l_atoms"] = l_atoms
-    data["coord_atoms"] = coord_atoms
+    data["coor_atoms"] = coord_atoms
     print "l_atoms=", data["l_atoms"]
-    print "coord_atoms=", data["coord_atoms"]
+    print "coor_atoms=", data["coor_atoms"]
            
     for i in xrange(iforce+1,iforce+10):
         print l_qe[i]
@@ -67,5 +67,5 @@ def unpack_file(filename):
     data["force_atoms"] = force_atoms
     print "force_atoms=", data["force_atoms"]
 
-    return data    
+    return data["force_atoms"], data    
 
