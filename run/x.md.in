@@ -1,7 +1,7 @@
 &CONTROL
   calculation = 'md',
   dt = 20.67055,
-  nstep = 1,
+  nstep = 0,
   pseudo_dir = '/projects/academic/alexeyak/Software/PSEUDO/SSSP/SSSP_acc_PBE/',
   outdir = './',
   prefix = 'x',

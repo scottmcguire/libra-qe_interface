@@ -26,12 +26,32 @@ sys.path.insert(1,os.environ["libra_dyn_path"])
 sys.path.insert(1,os.environ["libra_chemobjects_path"])
 sys.path.insert(1,os.environ["libra_hamiltonian_path"])
 
-#Import read_qe_inp_templ.py library
-from read_qe_inp_templ import*
-#Import exe_espresso.py library
-from exe_espresso import*
-#Import from unpack_file.py library
-from unpack_file import*
+
+#from read_qe_inp_templ import*
+
+def read_qe_inp_templ(inp_filename):
+## 
+# Add the function documentation here...
+#
+
+    f = open(inp_filename,"r")
+    templ = f.readlines()
+    f.close()
+
+    N = len(templ)
+    for i in range(0,N):
+        s = templ[i].split()
+        if len(s) > 0 and s[0] == "ATOMIC_POSITIONS":
+            ikeep = i 
+            break
+
+    templ[ikeep+1:N] = []
+    for i in xrange(ikeep+1):
+	print templ[i]
+
+    return templ
+    
+
 
 def main(params):
 ##
@@ -51,11 +71,9 @@ def main(params):
     
     params["qe_inp_templ"] = read_qe_inp_templ(params["qe_inp"])
 
-    exe_espresso(params)
 #    exe_espresso(params)
 
 #    Grad = unpack_file(params["qe_out"])
-    Grad = unpack_file(params["qe_out"])
 
 #    print data
 
