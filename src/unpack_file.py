@@ -1,10 +1,14 @@
-# Defining what information to extract and store in the dictionary
+## \file unpack_file.py Defining what information to extract and store in the dictionary
 #
+
 import os
 import sys
 import math
-#
+
 def unpack_file(filename):
+##
+# Add function documentation here
+#  
     f_qe = open(filename,"r")
     l_qe = f_qe.readlines()
     f_qe.close()
@@ -26,13 +30,16 @@ def unpack_file(filename):
     #Printing coordinate lines
     for i in xrange(icoord+1,icoord+7):
         print l_qe[i]
+
     #Reading atoms and xyz coordinates and writing into dictionary
     l_atoms = []
     coord_atoms = []
     for i in range(icoord+1,icoord+7):
         spline = l_qe[i].split()
+
         # specific atom
         l_atoms.append(spline[0])
+
         # atom coordinate
         coord = []
         for j in range(1,4):
@@ -47,7 +54,7 @@ def unpack_file(filename):
     for i in xrange(iforce+1,iforce+10):
         print l_qe[i]
 
-#Detect and print Force
+    #Detect and print Force
     force_atoms = []
     for i in range(iforce+4,iforce+10):
         spline = l_qe[i].split()
@@ -60,5 +67,5 @@ def unpack_file(filename):
     data["force_atoms"] = force_atoms
     print "force_atoms=", data["force_atoms"]
 
-
+    return data    
 
