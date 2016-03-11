@@ -7,8 +7,10 @@ import math
 
 def unpack_file(filename):
 ##
-# Add function documentation here
-#  
+#  Function for reading and extracting quantum espresso
+#  output. Extracted parameters are used in classical MD
+#  calculation using LIBRA in the next step.
+#
     f_qe = open(filename,"r")
     l_qe = f_qe.readlines()
     f_qe.close()
@@ -18,7 +20,7 @@ def unpack_file(filename):
     N = len(l_qe)
     for i in range(0,N):
         s = l_qe[i].split()
-        if len(s) > 0 and s[0] == "ATOMIC_POSITIONS":
+        if len(s) > 0 and s[0] == "site"  and s[3] == "positions":
             icoord = i
             break
     for i in range(0,N):
@@ -26,6 +28,12 @@ def unpack_file(filename):
         if len(s) > 0 and s[0] == "Forces" and s[1] == "acting":
             iforce = i
             break
+    # Extracting potential energy from QE
+    for i in range(0,N):
+        s  = l_qe[i].split()
+        if len(s) > 0 and s[0] == "!" and s[1] == "total" and s[2] == "energy":
+            data["tot_ene"] = float(s[4])
+            break    
 
     #Printing coordinate lines
     for i in xrange(icoord+1,icoord+7):
@@ -38,12 +46,12 @@ def unpack_file(filename):
         spline = l_qe[i].split()
 
         # specific atom
-        l_atoms.append(spline[0])
+        l_atoms.append(spline[1])
 
-        # atom coordinate
+        # atom coordinate in Bohr, 1 Angstrom = 1.88973 Bohr
         coord = []
-        for j in range(1,4):
-            coord.append(float(spline[j]))
+        for j in range(6,9):
+            coord.append(1.88973*(float(spline[j])))
         coord_atoms.append(coord)
 
     data["l_atoms"] = l_atoms
@@ -67,5 +75,6 @@ def unpack_file(filename):
     data["force_atoms"] = force_atoms
     print "force_atoms=", data["force_atoms"]
 
-    return data["force_atoms"], data    
+#    return data["force_atoms"], data    
+    return data["tot_ene"], data["force_atoms"], data    
 

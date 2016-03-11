@@ -10,5 +10,7 @@ def exe_espresso(param):
     os.system("srun pw.x <%s> %s" % (inp,out))
 
 #   Delete scratch directory and unecessary files
-    os.system("rm *.dat")
-    os.system("rm -r %s/*" %(scr_dir))
+    os.system("rm *.dat *.wfc* *.igk* *.mix*")
+    
+    os.system("rm -r x.save")
+

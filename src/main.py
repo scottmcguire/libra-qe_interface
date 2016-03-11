@@ -53,8 +53,8 @@ def main(params):
     params["qe_inp_templ"] = read_qe_inp_templ(params["qe_inp"])
 
     exe_espresso(params)
-
-    Grad, data = unpack_file(params["qe_out"])
+    Grad = []
+    E, Grad, data = unpack_file(params["qe_out"])
 
     print data
 
@@ -67,3 +67,6 @@ def main(params):
 
 #    print "Starting MD..."
 #    run_MD(syst,ao,E,C,data,params)
+#    test_data    run_MD(syst,ao,E,C,data,params)
+    test_data = run_MD(syst,data,params)
+    return data, test_data
