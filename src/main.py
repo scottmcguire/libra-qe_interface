@@ -65,8 +65,6 @@ def main(params):
 
     syst.show_info()
 
-#    print "Starting MD..."
-#    run_MD(syst,ao,E,C,data,params)
-#    test_data    run_MD(syst,ao,E,C,data,params)
+    # starting MD calculation
     test_data = run_MD(syst,data,params)
     return data, test_data

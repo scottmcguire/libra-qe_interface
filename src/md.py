@@ -72,6 +72,9 @@ def run_MD(syst,data,params):
     syst.extract_atomic_f(mol.f)
     syst.extract_atomic_mass(mol.mass)
 
+    # Rydberg to Hartree conversion factor
+    Ryd_to_Hrt = 0.5
+
     # Run actual calculations
     for i in xrange(Nsnaps):
 
@@ -82,12 +85,14 @@ def run_MD(syst,data,params):
             libra_to_espresso(data, params, mol)
             exe_espresso(params)         
             E, Grad, data = unpack_file(params["qe_out"])
-            epot = 0.5*E    # total energy from QE, the potential energy acting on nuclei
+            epot = Ryd_to_Hrt*E    # total energy from QE, the potential energy acting on nuclei
 
+            # Ry/au unit of Force in Quantum espresso
+            # So, converting Rydberg to Hartree
             for k in xrange(syst.Number_of_atoms):
-                mol.f[3*k]   = 0.5*Grad[k][0]
-                mol.f[3*k+1] = 0.5*Grad[k][1]
-                mol.f[3*k+2] = 0.5*Grad[k][2]
+                mol.f[3*k]   = Ryd_to_Hrt*Grad[k][0]
+                mol.f[3*k+1] = Ryd_to_Hrt*Grad[k][1]
+                mol.f[3*k+2] = Ryd_to_Hrt*Grad[k][2]
 
             mol.propagate_p(0.5*dt_nucl)
             # >>>>>>>>>>> Nuclear propagation ends <<<<<<<<<<<<
@@ -101,6 +106,7 @@ def run_MD(syst,data,params):
         fe.close()
     # input test_data for debugging
     test_data = {}
+
     return test_data
 
 def init_system(data, g):

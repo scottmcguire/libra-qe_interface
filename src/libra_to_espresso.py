@@ -5,7 +5,7 @@ def libra_to_espresso(data, params, mol):
 #
     qe_inp_templ = params["qe_inp_templ"]
     qe_inp = params["qe_inp"]
-# 
+ 
     g = open(qe_inp, "w")    # open input file
 
     # Write control section

@@ -48,10 +48,11 @@ def unpack_file(filename):
         # specific atom
         l_atoms.append(spline[1])
 
-        # atom coordinate in Bohr, 1 Angstrom = 1.88973 Bohr
+        # Convertingatom coordinate in Bohr, 1 Angstrom = 1.88973 Bohr
+        A_to_B = 1.88973
         coord = []
         for j in range(6,9):
-            coord.append(1.88973*(float(spline[j])))
+            coord.append(A_to_B*(float(spline[j])))
         coord_atoms.append(coord)
 
     data["l_atoms"] = l_atoms
@@ -75,6 +76,6 @@ def unpack_file(filename):
     data["force_atoms"] = force_atoms
     print "force_atoms=", data["force_atoms"]
 
-#    return data["force_atoms"], data    
+    # return data["force_atoms"], data    
     return data["tot_ene"], data["force_atoms"], data    
 

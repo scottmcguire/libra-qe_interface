@@ -1,7 +1,7 @@
 #
 def read_qe_inp_templ(inp_filename):
 ##
-# Add the function documentation here...
+# Reading and storing QE input templet
 #
 
     f = open(inp_filename,"r")
@@ -15,6 +15,7 @@ def read_qe_inp_templ(inp_filename):
             ikeep = i
             break
 
+    # Blank space for the atomic positions
     templ[ikeep+1:N] = []
     for i in xrange(ikeep+1):
         print templ[i]
