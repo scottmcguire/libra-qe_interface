@@ -46,7 +46,7 @@ def run_MD(syst,data,params):
     # the el list and run several copies of the run_MD function to average over initial conditions.
     # Also note that even under the CPA, we need to run this function several times - to sample
     # over initial nuclear distribution
-    # \param[in,out] data Data extracted from GAMESS output file, in the dictionary form.
+    # \param[in,out] data Data extracted from QE output file, in the dictionary form.
     # \param[in,out] params Input data containing all manual settings and some extracted data.
     # \param[out] test_data  the output data for debugging, in the form of dictionary
 
@@ -73,7 +73,7 @@ def run_MD(syst,data,params):
     syst.extract_atomic_mass(mol.mass)
 
     # Rydberg to Hartree conversion factor
-    Ryd_to_Hrt = 0.5
+    Ry_to_Ha = 0.5
 
     # Run actual calculations
     for i in xrange(Nsnaps):
@@ -85,14 +85,14 @@ def run_MD(syst,data,params):
             libra_to_espresso(data, params, mol)
             exe_espresso(params)         
             E, Grad, data = unpack_file(params["qe_out"])
-            epot = Ryd_to_Hrt*E    # total energy from QE, the potential energy acting on nuclei
+            epot = Ry_to_Ha*E    # total energy from QE, the potential energy acting on nuclei
 
             # Ry/au unit of Force in Quantum espresso
             # So, converting Rydberg to Hartree
             for k in xrange(syst.Number_of_atoms):
-                mol.f[3*k]   = Ryd_to_Hrt*Grad[k][0]
-                mol.f[3*k+1] = Ryd_to_Hrt*Grad[k][1]
-                mol.f[3*k+2] = Ryd_to_Hrt*Grad[k][2]
+                mol.f[3*k]   = Ry_to_Ha*Grad[k][0]
+                mol.f[3*k+1] = Ry_to_Ha*Grad[k][1]
+                mol.f[3*k+2] = Ry_to_Ha*Grad[k][2]
 
             mol.propagate_p(0.5*dt_nucl)
             # >>>>>>>>>>> Nuclear propagation ends <<<<<<<<<<<<
@@ -119,6 +119,7 @@ def init_system(data, g):
     # Used in:  main.py/main
 
     # Create Universe and populate it
+    Ry_to_Ha = 0.5
     U = Universe();   Load_PT(U, "elements.txt", 0)
 
     syst = System()
@@ -136,7 +137,7 @@ def init_system(data, g):
 
         print "CREATE_ATOM ",atom_dict["Atom_element"]
         at = Atom(U, atom_dict)
-        at.Atom_RB.rb_force = VECTOR(-g[i][0], -g[i][1], -g[i][2])
+        at.Atom_RB.rb_force = VECTOR(Ry_to_Ha*g[i][0], Ry_to_Ha*g[i][1], Ry_to_Ha*g[i][2])
 
         syst.CREATE_ATOM(at)
 
