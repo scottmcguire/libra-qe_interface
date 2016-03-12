@@ -1,11 +1,9 @@
 &CONTROL
-  calculation = 'md',
-  dt = 20.67055,
-  nstep = 0,
+  calculation = 'scf',
   pseudo_dir = '/projects/academic/alexeyak/Software/PSEUDO/SSSP/SSSP_acc_PBE/',
   outdir = './',
   prefix = 'x',
-  disk_io = 'low',
+  tprnfor = .true.
 /
 
 &SYSTEM
@@ -13,15 +11,15 @@
   celldm(1) = 1.89,
   nat = 6,
   ntyp = 2,
-  nspin = 1,
+  nspin = 2,
   nbnd = 20,
   ecutwfc = 30,
   tot_charge = 0.0,
+  starting_magnetization(1) = 0.01
   occupations = 'smearing',
   smearing = 'gaussian',
   degauss = 0.005,
   nosym = .true.,
-
 /
 
 &ELECTRONS
@@ -46,9 +44,9 @@ ATOMIC_SPECIES
 K_POINTS gamma                  
                                
 CELL_PARAMETERS
-    10.0000000    0.0000000    0.0000000
-     0.0000000   10.0000000    0.0000000
-     0.0000000    0.0000000   10.0000000
+    15.0000000    0.0000000    0.0000000
+     0.0000000   15.0000000    0.0000000
+     0.0000000    0.0000000   15.0000000
  
 ATOMIC_POSITIONS (alat)
 C         -5.04672        2.31763        0.01782

@@ -1,9 +1,9 @@
 #!/bin/sh
 #SBATCH --partition=valhalla
 #SBATCH --clusters=chemistry
-#SBATCH --time=00:20:00
+#SBATCH --time=10:20:00
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
+#SBATCH --ntasks-per-node=4
 #SBATCH --mem=25000
 ####SBATCH --mail-user=ekadashi@buffalo.edu
 
@@ -29,6 +29,4 @@ export I_MPI_PMI_LIBRARY=/usr/lib64/libpmi.so
 
 #srun pw.x < x.md.in > x.md.out
 python run.py
-
-
 

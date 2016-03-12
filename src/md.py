@@ -12,11 +12,6 @@
 ## \file md.py
 # This module implements the functions which execute classical MD.
 #
-
-#from create_gamess_input import *
-#from gamess_to_libra import *
-#from vibronic_hamiltonian import *
-
 import os
 import sys
 import math
@@ -31,13 +26,14 @@ from libmmath import *
 from libchemobjects import *
 from libhamiltonian import *
 from libdyn import *
-#from libhamiltonian_atomistic import *
-from LoadPT import * # Load_PT
+from LoadPT import * 
+from exe_espresso import*
+from unpack_file import*
+from libra_to_espresso import*
 
 ##############################################################
 
-
-def run_MD(syst,el,E,C,data,params):
+def run_MD(syst,data,params):
     ##
     # Finds the keywords and their patterns and extracts the parameters
     # \param[in,out] syst System object that includes atomic system information.
@@ -50,18 +46,14 @@ def run_MD(syst,el,E,C,data,params):
     # the el list and run several copies of the run_MD function to average over initial conditions.
     # Also note that even under the CPA, we need to run this function several times - to sample
     # over initial nuclear distribution
-    # \param[in,out] E    Molecular orbital energies
-    # \param[in,out] C    MO-LCAO coefficients
     # \param[in,out] data Data extracted from GAMESS output file, in the dictionary form.
     # \param[in,out] params Input data containing all manual settings and some extracted data.
     # \param[out] test_data  the output data for debugging, in the form of dictionary
 
     # This function executes classical MD in Libra and electronic structure calculation
-    # in GAMESS iteratively.
+    # in Quantum Espresso iteratively.
     #
     # Used in:  main.py/main
-
-
     # Open and close energy and trajectory files - this will effectively 
     # make them empty (to remove older info, in case we restart calculations)
     fe = open(params["ene_file"],"w")
@@ -70,25 +62,8 @@ def run_MD(syst,el,E,C,data,params):
     ft.close()
     
     dt_nucl = params["dt_nucl"]
-    el_mts = params["el_mts"] # multiple time stepping algorithm for electronic DOF propagation
-    if el_mts<1:
-        print "Error in run_MD: el_mts must be positive integer"
-        print "Value given = ", el_mts
-        print "Exiting..."
-        sys.exit(0)
-
-    dt_elec = dt_nucl/float(el_mts)
     Nsnaps = params["Nsnaps"]
     Nsteps = params["Nsteps"]
-
-    nstates = len(params["excitations"])
-
-    print_coherences = params["print_coherences"]
-
-    for k in xrange(nstates):
-        tmp = params["se_pop_prefix"] + "se_pop_" + str(k)
-        fel = open(tmp,"w")
-        fel.close()
 
     # Create a variable that will contain propagated nuclear DOFs
     mol = Nuclear(3*syst.Number_of_atoms)
@@ -97,97 +72,40 @@ def run_MD(syst,el,E,C,data,params):
     syst.extract_atomic_f(mol.f)
     syst.extract_atomic_mass(mol.mass)
 
-    # Debug printing
-    if 0==1:
-        for i in xrange(syst.Number_of_atoms):
-            print "mass m=",mol.mass[3*i], mol.mass[3*i+1], mol.mass[3*i+2]
-            print "coordinates q = ", mol.q[3*i], mol.q[3*i+1], mol.q[3*i+2]
-            print "momenta p= ", mol.p[3*i], mol.p[3*i+1], mol.p[3*i+2]
-            print "forces f= ",  mol.f[3*i], mol.f[3*i+1], mol.f[3*i+2]
-            print "********************************************************"
+    # Rydberg to Hartree conversion factor
+    Ryd_to_Hrt = 0.5
 
     # Run actual calculations
     for i in xrange(Nsnaps):
 
-        syst.set_atomic_q(mol.q)
-        syst.print_xyz(params["traj_file"],i)
-
         for j in xrange(Nsteps):
-
-            ij = i*Nsteps + j
-
-            if ij > 0: # pass this function at t=0
-                # Electronic propagation: half-step
-                for k in xrange(el_mts):
-                    for i_ex in range(0,nstates):  # loop over all initial excitations
-                        propagate_electronic(0.5*dt_elec, el[i_ex], Hvib)
-
             # >>>>>>>>>>> Nuclear propagation starts <<<<<<<<<<<<
-
             mol.propagate_p(0.5*dt_nucl)
             mol.propagate_q(dt_nucl) 
-          
-            # ======= Compute forces and energies using GAMESS ============
-            write_gms_inp(data, params, mol)
-            exe_gamess(params)         
+            libra_to_espresso(data, params, mol)
+            exe_espresso(params)         
+            E, Grad, data = unpack_file(params["qe_out"])
+            epot = Ryd_to_Hrt*E    # total energy from QE, the potential energy acting on nuclei
 
-            Grad, data, E_mol, D_mol, E_mol_red, D_mol_red = gamess_to_libra(params, ao, E, C, ij) # this will update AO and gradients
-            Hvib, D_SD = vibronic_hamiltonian(params,E_mol_red,D_mol_red,ij) # create vibronic hamiltonian
-
-            epot = data["tot_ene"]         # total energy from GAMESS which is the potential energy acting on nuclei
-
+            # Ry/au unit of Force in Quantum espresso
+            # So, converting Rydberg to Hartree
             for k in xrange(syst.Number_of_atoms):
-                mol.f[3*k]   = -Grad[k][0]
-                mol.f[3*k+1] = -Grad[k][1]
-                mol.f[3*k+2] = -Grad[k][2]
+                mol.f[3*k]   = Ryd_to_Hrt*Grad[k][0]
+                mol.f[3*k+1] = Ryd_to_Hrt*Grad[k][1]
+                mol.f[3*k+2] = Ryd_to_Hrt*Grad[k][2]
 
             mol.propagate_p(0.5*dt_nucl)
-
             # >>>>>>>>>>> Nuclear propagation ends <<<<<<<<<<<<
-
-            # Electronic propagation: half-step
-            for k in xrange(el_mts):
-                for i_ex in range(0,nstates):  # loop over all initial excitations
-                    propagate_electronic(0.5*dt_elec, el[i_ex], Hvib)
-
-
             ekin = compute_kinetic_energy(mol)
-            t = dt_nucl*ij # simulation time in a.u.
-
+            t = dt_nucl*(i*Nsteps + j) # simulation time in a.u.
         ################### Printing results ############################
-
         fe = open(params["ene_file"],"a")
         fe.write("i= %3i ekin= %8.5f  epot= %8.5f  etot= %8.5f\n" % (i, ekin, epot, ekin+epot)) 
+        syst.set_atomic_q(mol.q)
+        syst.print_xyz(params["traj_file"],i)
         fe.close()
-        
-        for k in xrange(nstates):
-            tmp = params["se_pop_prefix"] + "se_pop_" + str(k)
-            fel = open(tmp,"a")
-
-            # Print time
-            line = "t= %8.5f " % t
-
-            # Print populations
-            for st in xrange(nstates):
-                line = line + " %8.5f " % el[k].rho(st,st).real
-
-            if print_coherences == 1:
-                # Print coherences
-                for st in xrange(nstates):
-                    for st1 in xrange(st):
-                        line = line + " %8.5f %8.5f " % (el[k].rho(st,st1).real, el[k].rho(st,st1).imag)
-             
-            line = line + "\n"
-
-            fel.write(line)
-            fel.close()
-
-
     # input test_data for debugging
     test_data = {}
-    test_data["D_mol"] = D_mol
-    test_data["D_mol_red"] = D_mol_red
-    test_data["D_SD"] = D_SD
 
     return test_data
 
