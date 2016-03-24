@@ -1,4 +1,4 @@
-def libra_to_espresso(data, params, mol):
+def libra_to_espresso(data, params, mol, cell_dm):
 ##
 # Creates quantum espresso input from libra output
 #
@@ -18,7 +18,8 @@ def libra_to_espresso(data, params, mol):
 
     # Write atom name and coordinatess
     Natoms = len(data["l_atoms"])
-    B_to_A = 0.529177208    # Bohr to Angstrom conversion
+    #B_to_A = 0.529177208    # Bohr to Angstrom conversion
+    B_to_A = 1/cell_dm   # Bohr to Angstrom conversion
     for i in xrange(Natoms):
         atms = data["l_atoms"][i]
         x = B_to_A*mol.q[3*i]

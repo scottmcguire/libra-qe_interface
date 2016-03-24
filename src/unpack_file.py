@@ -5,7 +5,7 @@ import os
 import sys
 import math
 
-def unpack_file(filename):
+def unpack_file(filename, cell_dm):
 ##
 #  Function for reading and extracting quantum espresso
 #  output. Extracted parameters are used in classical MD
@@ -42,6 +42,9 @@ def unpack_file(filename):
     #Reading atoms and xyz coordinates and writing into dictionary
     l_atoms = []
     coord_atoms = []
+#    A_to_B = data["cell_dm"]
+#    A_to_B = data["tot_ene"]
+    
     for i in range(icoord+1,icoord+7):
         spline = l_qe[i].split()
 
@@ -49,10 +52,11 @@ def unpack_file(filename):
         l_atoms.append(spline[1])
 
         # Convertingatom coordinate in Bohr, 1 Angstrom = 1.88973 Bohr
-        A_to_B = 1.88973
+        #A_to_B = 1.88973
+#        A_to_B = data["cell_dm"]
         coord = []
         for j in range(6,9):
-            coord.append(A_to_B*(float(spline[j])))
+            coord.append(cell_dm*(float(spline[j])))
         coord_atoms.append(coord)
 
     data["l_atoms"] = l_atoms

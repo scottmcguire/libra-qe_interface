@@ -50,21 +50,22 @@ def main(params):
 
     ################# Step 1: Read initial input and run first QS calculation ##################    
     
-    params["qe_inp_templ"] = read_qe_inp_templ(params["qe_inp"])
+    cell_dm, params["qe_inp_templ"] = read_qe_inp_templ(params["qe_inp"])
 
     exe_espresso(params)
     Grad = []
-    E, Grad, data = unpack_file(params["qe_out"])
+    E, Grad, data = unpack_file(params["qe_out"], cell_dm)
 
     print data
 
     ################## Step 2: Initialize molecular system and run MD ###########################
 
     print "Initializing system..."
-    syst = init_system(data, Grad)
+#    syst = init_system(data, Grad)
+    syst = init_system(data, Grad, params["Temperature"])
 
     syst.show_info()
 
     # starting MD calculation
-    test_data = run_MD(syst,data,params)
+    test_data = run_MD(syst,data,params,cell_dm)
     return data, test_data

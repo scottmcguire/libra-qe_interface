@@ -8,15 +8,15 @@
 
 &SYSTEM
   ibrav = 0,
-  celldm(1) = 1.89 ,
+  celldm(1) = 1.89,
   nat = 6,
   ntyp = 2,
   nspin = 2,
-  nbnd = 20,
+  nbnd = 10,
   ecutwfc = 30,
   tot_charge = 0.0,
   starting_magnetization(1) = 0.01
-  occupations = 'smearing',
+  occupations = 'from_input',
   smearing = 'gaussian',
   degauss = 0.005,
   nosym = .true.,
@@ -56,3 +56,5 @@ H         -5.57772        3.10164        0.54761
 H         -3.18448        1.52493       -0.53565
 H         -3.15579        3.08584        0.50451
 
+OCCUPATIONS
+2 2 2 2 2 2 0 0 0 0

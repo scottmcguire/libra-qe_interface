@@ -33,7 +33,7 @@ from libra_to_espresso import*
 
 ##############################################################
 
-def run_MD(syst,data,params):
+def run_MD(syst,data,params,cell_dm):
     ##
     # Finds the keywords and their patterns and extracts the parameters
     # \param[in,out] syst System object that includes atomic system information.
@@ -46,7 +46,7 @@ def run_MD(syst,data,params):
     # the el list and run several copies of the run_MD function to average over initial conditions.
     # Also note that even under the CPA, we need to run this function several times - to sample
     # over initial nuclear distribution
-    # \param[in,out] data Data extracted from GAMESS output file, in the dictionary form.
+    # \param[in,out] data Data extracted from QE output file, in the dictionary form.
     # \param[in,out] params Input data containing all manual settings and some extracted data.
     # \param[out] test_data  the output data for debugging, in the form of dictionary
 
@@ -73,34 +73,77 @@ def run_MD(syst,data,params):
     syst.extract_atomic_mass(mol.mass)
 
     # Rydberg to Hartree conversion factor
-    Ryd_to_Hrt = 0.5
+    Ry_to_Ha = 0.5
+    MD_type = params["MD_type"]
+    kB = 3.1668e-6 # Boltzmann constant in a.u.
+
+    # initialize Thermostat object
+    if MD_type == 1: # NVT-MD
+        print " Initialize thermostats......"
+        therm = Thermostat({"nu_therm":params["nu_therm"], "NHC_size":params["NHC_size"], "Temperature":params["Temperature"], "thermostat_type":params["thermostat_type"]})
+        therm.set_Nf_t(3*syst.Number_of_atoms)
+        therm.set_Nf_r(0)
+        therm.init_nhc()
 
     # Run actual calculations
     for i in xrange(Nsnaps):
 
         for j in xrange(Nsteps):
+
+            if MD_type == 1: # NVT-MD
+                # velocity scaling
+                for k in xrange(3*syst.Number_of_atoms):
+                    mol.p[k] = mol.p[k] * therm.vel_scale(0.5*dt_nucl)
+
             # >>>>>>>>>>> Nuclear propagation starts <<<<<<<<<<<<
             mol.propagate_p(0.5*dt_nucl)
             mol.propagate_q(dt_nucl) 
-            libra_to_espresso(data, params, mol)
+            libra_to_espresso(data, params, mol, cell_dm)
             exe_espresso(params)         
-            E, Grad, data = unpack_file(params["qe_out"])
-            epot = Ryd_to_Hrt*E    # total energy from QE, the potential energy acting on nuclei
+            E, Grad, data = unpack_file(params["qe_out"], cell_dm)
+            epot = Ry_to_Ha*E    # total energy from QE, the potential energy acting on nuclei
 
             # Ry/au unit of Force in Quantum espresso
             # So, converting Rydberg to Hartree
             for k in xrange(syst.Number_of_atoms):
-                mol.f[3*k]   = Ryd_to_Hrt*Grad[k][0]
-                mol.f[3*k+1] = Ryd_to_Hrt*Grad[k][1]
-                mol.f[3*k+2] = Ryd_to_Hrt*Grad[k][2]
+                mol.f[3*k]   = Ry_to_Ha*Grad[k][0]
+                mol.f[3*k+1] = Ry_to_Ha*Grad[k][1]
+                mol.f[3*k+2] = Ry_to_Ha*Grad[k][2]
+
+            ekin = compute_kinetic_energy(mol)
+
+            # Propagate Thermostat
+            if MD_type == 1:
+                therm.propagate_nhc(dt_nucl, ekin, 0.0, 0.0)
 
             mol.propagate_p(0.5*dt_nucl)
             # >>>>>>>>>>> Nuclear propagation ends <<<<<<<<<<<<
-            ekin = compute_kinetic_energy(mol)
+#            ekin = compute_kinetic_energy(mol)
+
+            if MD_type == 1: # NVT-MD
+                # velocity scaling
+                for k in xrange(3*syst.Number_of_atoms):
+                    mol.p[k] = mol.p[k] * therm.vel_scale(0.5*dt_nucl)
+
+
             t = dt_nucl*(i*Nsteps + j) # simulation time in a.u.
         ################### Printing results ############################
+# >>>>>>>>>>>>>> Compute energies <<<<<<<<<<<<<<<<<<<<<<<<<
+        ekin = compute_kinetic_energy(mol)
+        etot = ekin + epot
+
+        ebath = 0.0
+        if MD_type == 1:
+            ebath = therm.energy()
+
+        eext = etot + ebath
+        curr_T = 2.0*ekin/(3*syst.Number_of_atoms*kB)
+
+        ################### Printing results ############################
+
+        # Energy
         fe = open(params["ene_file"],"a")
-        fe.write("i= %3i ekin= %8.5f  epot= %8.5f  etot= %8.5f\n" % (i, ekin, epot, ekin+epot)) 
+        fe.write("i= %3i ekin= %8.5f  epot= %8.5f  etot= %8.5f  eext = %8.5f curr_T= %8.5f\n" % (i, ekin, epot, etot, eext, curr_T)) 
         syst.set_atomic_q(mol.q)
         syst.print_xyz(params["traj_file"],i)
         fe.close()
@@ -109,7 +152,7 @@ def run_MD(syst,data,params):
 
     return test_data
 
-def init_system(data, g):
+def init_system(data, g, T):
     ##
     # Finds the keywords and their patterns and extracts the parameters
     # \param[in] data   The list of variables, containing atomic element names and coordinates
@@ -119,6 +162,7 @@ def init_system(data, g):
     # Used in:  main.py/main
 
     # Create Universe and populate it
+    Ry_to_Ha = 0.5
     U = Universe();   Load_PT(U, "elements.txt", 0)
 
     syst = System()
@@ -136,12 +180,15 @@ def init_system(data, g):
 
         print "CREATE_ATOM ",atom_dict["Atom_element"]
         at = Atom(U, atom_dict)
-        at.Atom_RB.rb_force = VECTOR(-g[i][0], -g[i][1], -g[i][2])
+        at.Atom_RB.rb_force = VECTOR(Ry_to_Ha*g[i][0], Ry_to_Ha*g[i][1], Ry_to_Ha*g[i][2])
 
         syst.CREATE_ATOM(at)
 
     syst.show_atoms()
+
     print "Number of atoms in the system = ", syst.Number_of_atoms
+    # Initialize random velocity at T(K) using normal distribution
+    syst.init_atom_velocities(T)
 
     return syst
 
