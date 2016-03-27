@@ -33,7 +33,7 @@ from libra_to_espresso import*
 
 ##############################################################
 
-def run_MD(syst,data,params,cell_dm):
+def run_MD(syst,data,params):
     ##
     # Finds the keywords and their patterns and extracts the parameters
     # \param[in,out] syst System object that includes atomic system information.
@@ -98,9 +98,9 @@ def run_MD(syst,data,params,cell_dm):
             # >>>>>>>>>>> Nuclear propagation starts <<<<<<<<<<<<
             mol.propagate_p(0.5*dt_nucl)
             mol.propagate_q(dt_nucl) 
-            libra_to_espresso(data, params, mol, cell_dm)
+            libra_to_espresso(data, params, mol)
             exe_espresso(params)         
-            E, Grad, data = unpack_file(params["qe_out"], cell_dm)
+            E, Grad, data = unpack_file(params)
             epot = Ry_to_Ha*E    # total energy from QE, the potential energy acting on nuclei
 
             # Ry/au unit of Force in Quantum espresso

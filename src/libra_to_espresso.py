@@ -1,10 +1,12 @@
-def libra_to_espresso(data, params, mol, cell_dm):
+def libra_to_espresso(data, params, mol):
 ##
 # Creates quantum espresso input from libra output
 #
 #
     qe_inp_templ = params["qe_inp_templ"]
     qe_inp = params["qe_inp"]
+    #
+    cell_dm = params["cell_dm"]
  
     g = open(qe_inp, "w")    # open input file
 

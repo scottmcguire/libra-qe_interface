@@ -12,7 +12,8 @@ def read_qe_inp_templ(inp_filename):
     for i in range(0,N):
         s = templ[i].split()
         if len(s) > 0 and s[0] == "celldm(1)" and s[1] == "=":
-            cell_dm = float(s[2])
+            sa = s[2].split(',')
+            cell_dm = float(sa[0])
             break
 
     N = len(templ)
