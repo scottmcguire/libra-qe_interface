@@ -47,6 +47,7 @@ def main(params):
     ################# Step 0: Use the initial file to create a working input file ###############
  
     os.system("cp %s %s" %(params["qe_inp0"], params["qe_inp"]))
+    # Check ***
 
     ################# Step 1: Read initial input and run first QS calculation ##################    
     
