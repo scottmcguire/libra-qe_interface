@@ -51,7 +51,8 @@ def main(params):
 
     ################# Step 1: Read initial input and run first QS calculation ##################    
     
-    cell_dm, params["qe_inp_templ"] = read_qe_inp_templ(params["qe_inp"])
+    #cell_dm, params["qe_inp_templ"] = read_qe_inp_templ(params["qe_inp"])
+    params["cell_dm"], params["qe_inp_templ"] = read_qe_inp_templ(params["qe_inp"])
 
     exe_espresso(params)
     Grad = []
