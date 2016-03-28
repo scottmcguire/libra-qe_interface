@@ -5,6 +5,8 @@ def libra_to_espresso(data, params, mol):
 #
     qe_inp_templ = params["qe_inp_templ"]
     qe_inp = params["qe_inp"]
+    #
+    cell_dm = params["cell_dm"]
  
     g = open(qe_inp, "w")    # open input file
 
@@ -18,7 +20,8 @@ def libra_to_espresso(data, params, mol):
 
     # Write atom name and coordinatess
     Natoms = len(data["l_atoms"])
-    B_to_A = 0.529177208    # Bohr to Angstrom conversion
+    #B_to_A = 0.529177208    # Bohr to Angstrom conversion
+    B_to_A = 1/cell_dm   # Bohr to Angstrom conversion
     for i in xrange(Natoms):
         atms = data["l_atoms"][i]
         x = B_to_A*mol.q[3*i]
