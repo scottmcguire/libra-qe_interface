@@ -29,6 +29,7 @@ from libdyn import *
 from LoadPT import * 
 from exe_espresso import*
 from unpack_file import*
+from unpack_filex import*
 from libra_to_espresso import*
 
 ##############################################################
@@ -99,16 +100,21 @@ def run_MD(syst,data,params):
             mol.propagate_p(0.5*dt_nucl)
             mol.propagate_q(dt_nucl) 
             libra_to_espresso(data, params, mol)
-            exe_espresso(params)         
-            E, Grad, data = unpack_file(params)
-            epot = Ry_to_Ha*E    # total energy from QE, the potential energy acting on nuclei
+            # Running SCF calculation for different excited states, extracting their Energies and Forces
+            for i in range(0,params["no_ex"]):
+                exe_espresso(params, i)         
+                params["E%i" %i], params["Grad%i" %i], params["data%i" %i] = unpack_file(params, i)
+                params["epot%i" %i] = Ry_to_Ha*params["E%i" %i]    # total energy from QE, the potential energy acting on nuclei
+            data = params["data0"]
+            epot = params["epot0"]
+            epot_ex = params["epot1"]  #to print first excited state energy
 
             # Ry/au unit of Force in Quantum espresso
             # So, converting Rydberg to Hartree
             for k in xrange(syst.Number_of_atoms):
-                mol.f[3*k]   = Ry_to_Ha*Grad[k][0]
-                mol.f[3*k+1] = Ry_to_Ha*Grad[k][1]
-                mol.f[3*k+2] = Ry_to_Ha*Grad[k][2]
+                mol.f[3*k]   = Ry_to_Ha*params["Grad0"][k][0]
+                mol.f[3*k+1] = Ry_to_Ha*params["Grad0"][k][1]
+                mol.f[3*k+2] = Ry_to_Ha*params["Grad0"][k][2]
 
             ekin = compute_kinetic_energy(mol)
 
@@ -143,7 +149,7 @@ def run_MD(syst,data,params):
 
         # Energy
         fe = open(params["ene_file"],"a")
-        fe.write("i= %3i ekin= %8.5f  epot= %8.5f  etot= %8.5f  eext = %8.5f curr_T= %8.5f\n" % (i, ekin, epot, etot, eext, curr_T)) 
+        fe.write("i= %3i ekin= %8.5f  epot= %8.5f  epot_ex=%8.5f etot= %8.5f  eext = %8.5f curr_T= %8.5f\n" % (i, ekin, epot,epot_ex, etot, eext, curr_T)) 
         syst.set_atomic_q(mol.q)
         syst.print_xyz(params["traj_file"],i)
         fe.close()
