@@ -26,7 +26,7 @@ from libmmath import *
 from libchemobjects import *
 from libhamiltonian import *
 from libdyn import *
-from LoadPT import * 
+#from LoadPT import * 
 from exe_espresso import*
 from unpack_file import*
 #from unpack_filex import*
@@ -137,7 +137,7 @@ def run_MD(syst,data,params):
 
             t = dt_nucl*(i*Nsteps + j) # simulation time in a.u.
         ################### Printing results ############################
-# >>>>>>>>>>>>>> Compute energies <<<<<<<<<<<<<<<<<<<<<<<<<
+        # >>>>>>>>>>>>>> Compute energies <<<<<<<<<<<<<<<<<<<<<<<<<
         ekin = compute_kinetic_energy(mol)
         etot = ekin + epot
 
@@ -161,45 +161,6 @@ def run_MD(syst,data,params):
 
     return test_data
 
-def init_system(data, g, T):
-    ##
-    # Finds the keywords and their patterns and extracts the parameters
-    # \param[in] data   The list of variables, containing atomic element names and coordinates
-    # \param[in] g      The list of gradients on all atoms
-    # This function returns System object which will be used in classical MD.
-    #
-    # Used in:  main.py/main
-
-    # Create Universe and populate it
-    Ry_to_Ha = 0.5
-    U = Universe();   Load_PT(U, "elements.txt", 0)
-
-    syst = System()
-
-    sz = len(data["coor_atoms"])
-    for i in xrange(sz):
-        atom_dict = {} 
-        atom_dict["Atom_element"] = data["l_atoms"][i]
-
-        # warning: below we take coordinates in Angstroms, no need for conversion here - it will be
-        # done inside
-        atom_dict["Atom_cm_x"] = data["coor_atoms"][i][0]
-        atom_dict["Atom_cm_y"] = data["coor_atoms"][i][1]
-        atom_dict["Atom_cm_z"] = data["coor_atoms"][i][2]
-
-        print "CREATE_ATOM ",atom_dict["Atom_element"]
-        at = Atom(U, atom_dict)
-        at.Atom_RB.rb_force = VECTOR(Ry_to_Ha*g[i][0], Ry_to_Ha*g[i][1], Ry_to_Ha*g[i][2])
-
-        syst.CREATE_ATOM(at)
-
-    syst.show_atoms()
-
-    print "Number of atoms in the system = ", syst.Number_of_atoms
-    # Initialize random velocity at T(K) using normal distribution
-    syst.init_atom_velocities(T)
-
-    return syst
 
 
 
