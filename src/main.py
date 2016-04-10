@@ -49,7 +49,7 @@ def main(params):
 
     params["cell_dm"], params["qe_inp_templ"] = read_qe_inp_templ(params["qe_inp0"])
 
-    exe_espresso(params, 0)
+    exe_espresso(params["qe_inp0"], params["qe_out0"] )
     Grad = []
     E, Grad, data = unpack_file(params, 0)
     print data

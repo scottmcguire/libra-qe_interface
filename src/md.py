@@ -29,7 +29,7 @@ from libdyn import *
 from LoadPT import * 
 from exe_espresso import*
 from unpack_file import*
-from unpack_filex import*
+#from unpack_filex import*
 from libra_to_espresso import*
 
 ##############################################################
@@ -101,8 +101,9 @@ def run_MD(syst,data,params):
             mol.propagate_q(dt_nucl) 
             libra_to_espresso(data, params, mol)
             # Running SCF calculation for different excited states, extracting their Energies and Forces
-            for i in range(0,params["no_ex"]):
-                exe_espresso(params, i)         
+            for i in xrange(params["no_ex"]):
+                exe_espresso(params["qe_inp%i" % i], params["qe_out%i" % i] ) 
+
                 params["E%i" %i], params["Grad%i" %i], params["data%i" %i] = unpack_file(params, i)
                 params["epot%i" %i] = Ry_to_Ha*params["E%i" %i]    # total energy from QE, the potential energy acting on nuclei
             data = params["data0"]

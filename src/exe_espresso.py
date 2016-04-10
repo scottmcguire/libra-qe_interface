@@ -1,16 +1,32 @@
-#Script for running Quantum espresso
+#*********************************************************************************
+#* Copyright (C) 2016 Ekadashi Pradhan, Alexey V. Akimov
+#*
+#* This file is distributed under the terms of the GNU General Public License
+#* as published by the Free Software Foundation, either version 2 of
+#* the License, or (at your option) any later version.
+#* See the file LICENSE in the root directory of this distribution
+#* or <http://www.gnu.org/licenses/>.
+#*
+#*********************************************************************************/
+
+## \file exe_espresso.py This file implements functions for executing calculations 
+# with QE code
 #
+
 import os
 import sys
 
-def exe_espresso(params, a):
-    print "i = ", a
-    inp = params["qe_inp%i" % (a)]
-    out = params["qe_out%i" %(a)]
-    scr_dir = os.environ['SLURMTMPDIR']
-    os.system("srun pw.x <%s> %s" % (inp,out))
+def exe_espresso(inp, out):
+##
+# Function for executing calculations using Quantum Espresso
+# once the calculations are finished, all the temporary data are
+# deleted
+# \param[in] inp The name of the input file
+# \param[in] out The name of the output file
+#
+    os.system("srun pw.x < %s > %s" % (inp,out))
 
-#   Delete scratch directory and unecessary files
+    # Delete scratch directory and unecessary files
     os.system("rm *.dat *.wfc* *.igk* *.mix*")
-    #os.system("rm -r *.save")
+    #os.system("rm -r *.save") # not sure if we don't need to remove this directory
 
