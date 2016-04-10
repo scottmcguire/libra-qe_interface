@@ -3,16 +3,20 @@ import sys
 import math
 
 
-################ System-specific settings ########################
-# For Alexey
-#libra_bin_path = "/projects/academic/alexeyak/alexeyak/libra-dev/libracode-code/_build/src" # set the path name to the source files in libracode
-#libra_qe_int_path = "/user/alexeyak/Programming/libra-qe_interface/src"
-#res_dir =  "/user/alexeyak/Programming/libra-qe_interface/run/res/"
+user = 1  # 0 - Alexey, 1 - Ekadashi
 
-# For Ekadashi
-libra_bin_path = "/projects/academic/alexeyak/ekadashi/libracode-dev/libracode-code/_build/src"
-libra_qe_int_path = "/projects/academic/alexeyak/ekadashi/devel/libra-qe_interface/src"
-res_dir = "/projects/academic/alexeyak/ekadashi/devel/libra-qe_interface/run/res/"
+################ System-specific settings ########################
+if user==0:
+    # For Alexey
+    libra_bin_path = "/projects/academic/alexeyak/alexeyak/libra-dev/libracode-code/_build/src" # set the path name to the source files in libracode
+    libra_qe_int_path = "/user/alexeyak/Programming/libra-qe_interface/src"
+    res_dir =  "/user/alexeyak/Programming/libra-qe_interface/run/res/"
+
+elif user==1:
+    # For Ekadashi
+    libra_bin_path = "/projects/academic/alexeyak/ekadashi/libracode-dev/libracode-code/_build/src"
+    libra_qe_int_path = "/projects/academic/alexeyak/ekadashi/devel/libra-qe_interface/src"
+    res_dir = "/projects/academic/alexeyak/ekadashi/devel/libra-qe_interface/run/res/"
 
 
 os.environ["src_path"] = libra_qe_int_path   # Path to the source code
