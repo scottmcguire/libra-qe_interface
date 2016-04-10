@@ -30,7 +30,7 @@ from LoadPT import *
 from exe_espresso import*
 from unpack_file import*
 #from unpack_filex import*
-from libra_to_espresso import*
+from create_qe_input import*
 
 ##############################################################
 
@@ -99,7 +99,9 @@ def run_MD(syst,data,params):
             # >>>>>>>>>>> Nuclear propagation starts <<<<<<<<<<<<
             mol.propagate_p(0.5*dt_nucl)
             mol.propagate_q(dt_nucl) 
-            libra_to_espresso(data, params, mol)
+            #libra_to_espresso(data, params, mol)
+            write_qe_input(data["l_atoms"], params, mol)
+
             # Running SCF calculation for different excited states, extracting their Energies and Forces
             for i in xrange(params["no_ex"]):
                 exe_espresso(params["qe_inp%i" % i], params["qe_out%i" % i] ) 
