@@ -10,12 +10,85 @@
 #*********************************************************************************/^M
 
 ## \file create_qe_input.py
-# This module implements the functions which execute classical MD.
+# This module implements the functions which prepare QE input with different occupation schemes
 #
 
+import os
+import sys
 import math
 
-from excited_state import*
+sys.path.insert(1,os.environ["libra_calculators_path"])
+sys.path.insert(1,os.environ["libra_mmath_path"])
+
+from libcalculators import *
+from libmmath import *
+
+
+def excitation_to_qe_occ(params, state):
+##
+# This function converts the Libra "excitation" object to the QE occupation scheme
+# \param[in] params Control parameters
+# \param[in] state The excitation to convert into QE format
+#
+# Returns a list of occupation numbers of the alpha, beta, and total (doubly degenerate) orbitals
+
+
+    norb = params["norb"] # the number of KS orbitals
+    nel = param["nel"]    # the number of electrons
+
+    # Number of occupied alpha and beta orbitals
+    nocc_alp = nel/2  # integer division!
+    nocc_bet = nel - nocc_alp
+    homo = nocc_alp
+
+    # Generate reference (ground state) occupation scheme for alpha and beta orbitals
+    gs_alp = []
+    gs_bet = []
+    for i in xrange(norb):
+        if i<nocc_alp:
+            gs_alp.append([i,1.0])
+        else:
+            gs_alp.append([i,0.0])
+
+        if i<nocc_bet:
+            gs_bet.append([i,1.0])
+        else:
+            gs_bet.append([i,0.0])
+
+    # Compute indices of the orbitals involved in the excitation
+    a = state.from_orbit[0] + homo
+    a_s = state.from_spin[0]  # +1 for alp, -1 for bet
+    b = state.to_orbit[0] + homo
+    b_s = state.to_spin[0]    # +1 for alp, -1 for bet
+
+    # Do separate alpha and beta excitations
+    # Here we use "excite" function from the core of Libra package
+    ex_alp = []
+    ex_bet = []
+    if a_s==1 and a_s == b_s:
+        ex_alp = excite(a,b,gs_alp)
+        ex_bet = gs_bet
+    elif a_s==-1 and a_s == b_s:
+        ex_alp = gs_alp
+        ex_bet = excite(a,b,gs_bet)
+    else:
+        print "Error in qe_occ: excitations with spin flip are not allowed yet\nExiting...\n"
+        sys.exit(0)
+
+
+    # So far we only look at the non-spin-polarized case, so lets compute the
+    # total occupation numbers
+    occ = [0.0]*norb
+    occ_alp = [0.0]*norb
+    occ_bet = [0.0]*norb
+
+    for i in xrange(norb):
+        occ_alp[i] = ex_alp[i][1]
+        occ_bet[i] = ex_bet[i][1]
+        occ[i] = ex_alp[i][1] + ex_bet[i][1]
+
+    return occ, occ_alp, occ_bet
+
 
 
 def print_occupations(occ):
@@ -38,42 +111,41 @@ def print_occupations(occ):
 
 
 
-def write_qe_input(label, params, mol):
+def write_qe_input(qe_inp, label, mol, excitation, params):
 ##
 # Creates the Quantum Espresso input using the data provided
+# \param[in] qe_inp The name of the input file we prepare
 # \param[in] label Element symbols for all atoms in the system (list of strings)
-# \param[in] params The general control parameters (dictionary)
 # \param[in] mol The object containing nuclear DOF
-# \param[in] qe_inp Name of the input file to be written
+# \param[in] excitation The object of the "excitation" type, defining the SD configuration
+# \param[in] params The general control parameters (dictionary)
 #
 
-    no_ex = params["no_ex"] 
     qe_inp_templ = params["qe_inp_templ"]
+    cell_dm = params["cell_dm"]
 
-    for i in range(0, no_ex):
-        qe_inp = params["qe_inp%i" %i]
-        g = open(qe_inp, "w")    # open input file
-        cell_dm = params["cell_dm"]
+    g = open(qe_inp, "w")     
 
-        # Write control parameters section
-        tl = len(qe_inp_templ)
-        for j in xrange(tl):
-            g.write(qe_inp_templ[j])
-        g.write("\n")
+    # Write control parameters section
+    for a in qe_inp_templ:
+        g.write(a)
+    g.write("\n")
 
-        # Write atom name and coordinatess
-        Natoms = len(label)
-        B_to_A = 1.0/cell_dm   # Bohr to Angstrom conversion
-        for k in xrange(Natoms):
-            atms = label[k]
-            x = B_to_A*mol.q[3*k]
-            y = B_to_A*mol.q[3*k+1]
-            z = B_to_A*mol.q[3*k+2]
-            g.write("%s    %12.7f    %12.7f    %12.7f  \n"  % (atms, x, y, z) )
+    # Write atom name and coordinatess
+    Natoms = len(label)
+    B_to_A = 1.0/cell_dm   # Bohr to Angstrom conversion
 
-        # Single excitations with no spin-polarization 
-        occ = excited_state(params, i)
-        g.write(print_occupations(occ))
-        g.close()
+    for k in xrange(Natoms):
+        atms = label[k]
+        x = B_to_A*mol.q[3*k]
+        y = B_to_A*mol.q[3*k+1]
+        z = B_to_A*mol.q[3*k+2]
+        g.write("%s    %12.7f    %12.7f    %12.7f  \n"  % (atms, x, y, z) )
+
+    # Single excitations with no spin-polarization 
+    occ, occ_alp, occ_bet = excitation_to_qe_occ(params, excitation)
+    g.write(print_occupations(occ))
+
+    g.close()
 
 
