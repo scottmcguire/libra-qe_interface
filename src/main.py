@@ -26,11 +26,9 @@ sys.path.insert(1,os.environ["libra_dyn_path"])
 sys.path.insert(1,os.environ["libra_chemobjects_path"])
 sys.path.insert(1,os.environ["libra_hamiltonian_path"])
 
-#Import read_qe_inp_templ.py library
+#Import libraries
 from read_qe_inp_templ import*
-#Import exe_espresso.py library
 from exe_espresso import*
-#Import from unpack_file.py library
 from unpack_file import*
 from md import *
 
@@ -45,18 +43,15 @@ def main(params):
 # Used in:  main.py
 
     ################# Step 0: Use the initial file to create a working input file ###############
- 
-    os.system("cp %s %s" %(params["qe_inp0"], params["qe_inp"]))
-    # Check ***
+    os.system("cp %s %s" %(params["qe_inp00"], params["qe_inp0"]))
 
     ################# Step 1: Read initial input and run first QS calculation ##################    
-    
-    params["cell_dm"], params["qe_inp_templ"] = read_qe_inp_templ(params["qe_inp"])
 
-    exe_espresso(params)
+    params["cell_dm"], params["qe_inp_templ"] = read_qe_inp_templ(params["qe_inp0"])
+
+    exe_espresso(params, 0)
     Grad = []
-    E, Grad, data = unpack_file(params)
-
+    E, Grad, data = unpack_file(params, 0)
     print data
 
     ################## Step 2: Initialize molecular system and run MD ###########################
@@ -69,3 +64,4 @@ def main(params):
     # starting MD calculation
     test_data = run_MD(syst,data,params)
     return data, test_data
+

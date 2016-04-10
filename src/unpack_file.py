@@ -5,7 +5,7 @@ import os
 import sys
 import math
 
-def unpack_file(params):
+def unpack_file(params, ia):
 ##
 #  Function for reading and extracting quantum espresso
 #  output. Extracted parameters are used in classical MD
@@ -13,7 +13,7 @@ def unpack_file(params):
 #
     
     cell_dm = params["cell_dm"]
-    filename = params["qe_out"]
+    filename = params["qe_out%i" %ia]
 
     f_qe = open(filename, "r")
     l_qe = f_qe.readlines()
