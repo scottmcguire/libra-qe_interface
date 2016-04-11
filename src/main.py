@@ -17,14 +17,22 @@ import os
 import sys
 import math
 
+if sys.platform=="cygwin":
+    from cyglibra_core import *
+elif sys.platform=="linux" or sys.platform=="linux2":
+    from liblibra_core import *
+
+from libra_py import *
+
+
 # Path the the source code
 # First, we add the location of the library to test to the PYTHON path
-sys.path.insert(1,os.environ["src_path"]) # Path the the source code
-sys.path.insert(1,os.environ["libra_mmath_path"])
-sys.path.insert(1,os.environ["libra_qchem_path"])
-sys.path.insert(1,os.environ["libra_dyn_path"])
-sys.path.insert(1,os.environ["libra_chemobjects_path"])
-sys.path.insert(1,os.environ["libra_hamiltonian_path"])
+#sys.path.insert(1,os.environ["src_path"]) # Path the the source code
+#sys.path.insert(1,os.environ["libra_mmath_path"])
+#sys.path.insert(1,os.environ["libra_qchem_path"])
+#sys.path.insert(1,os.environ["libra_dyn_path"])
+#sys.path.insert(1,os.environ["libra_chemobjects_path"])
+#sys.path.insert(1,os.environ["libra_hamiltonian_path"])
 
 #Import libraries
 from read_qe_inp_templ import*
@@ -49,17 +57,16 @@ def main(params):
 
     params["cell_dm"], params["qe_inp_templ"] = read_qe_inp_templ(params["qe_inp0"])
 
-    exe_espresso(params, 0)
-    Grad = []
-    E, Grad, data = unpack_file(params, 0)
-    print data
+    exe_espresso(params["qe_inp0"], params["qe_out0"] )
+    tot_ene, label, R, grads = unpack_file(params["qe_out0"], params["qe_debug_print"])
 
     ################## Step 2: Initialize molecular system and run MD ###########################
 
     print "Initializing system..."
-    syst = init_system(data, Grad, params["Temperature"])
+    df = 0 # debug flag
+    # Here we use libra_py module!
+    syst = init_system.init_system(label, R, grads, rnd, params["Temperature"], params["sigma_pos"], df, "elements.txt")      
 
-    syst.show_info()
 
     # starting MD calculation
     test_data = run_MD(syst,data,params)
