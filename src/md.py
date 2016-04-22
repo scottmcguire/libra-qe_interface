@@ -16,29 +16,28 @@ import os
 import sys
 import math
 
-# First, we add the location of the library to test to the PYTHON path
-sys.path.insert(1,os.environ["libra_mmath_path"])
-sys.path.insert(1,os.environ["libra_chemobjects_path"])
-sys.path.insert(1,os.environ["libra_hamiltonian_path"])
-sys.path.insert(1,os.environ["libra_dyn_path"])
 
-from libmmath import *
-from libchemobjects import *
-from libhamiltonian import *
-from libdyn import *
-#from LoadPT import * 
+if sys.platform=="cygwin":
+    from cyglibra_core import *
+elif sys.platform=="linux" or sys.platform=="linux2":
+    from liblibra_core import *
+
+from libra_py import *
+
+
+# First, we add the location of the library to test to the PYTHON path
+##sys.path.insert(1,os.environ["libra_mmath_path"])
+##sys.path.insert(1,os.environ["libra_chemobjects_path"])
+##sys.path.insert(1,os.environ["libra_hamiltonian_path"])
+##sys.path.insert(1,os.environ["libra_dyn_path"])
+
 from exe_espresso import*
 from unpack_file import*
-<<<<<<< HEAD
-from libra_to_espresso import*
-=======
-#from unpack_filex import*
 from create_qe_input import*
->>>>>>> 2c56307366b75ffb117ab130916a08afd48773c4
 
 ##############################################################
 
-def run_MD(syst,data,params):
+def run_MD(label,syst,data,params):
     ##
     # Finds the keywords and their patterns and extracts the parameters
     # \param[in,out] syst System object that includes atomic system information.
@@ -103,25 +102,27 @@ def run_MD(syst,data,params):
             # >>>>>>>>>>> Nuclear propagation starts <<<<<<<<<<<<
             mol.propagate_p(0.5*dt_nucl)
             mol.propagate_q(dt_nucl) 
-            #libra_to_espresso(data, params, mol)
-            write_qe_input(data["l_atoms"], params, mol)
 
             # Running SCF calculation for different excited states, extracting their Energies and Forces
             for i in xrange(params["no_ex"]):
+                print params["excitations"][i]
+                write_qe_input(params["qe_inp%i" %i],label,mol,params["excitations"][i],params)
                 exe_espresso(params["qe_inp%i" % i], params["qe_out%i" % i] ) 
 
-                params["E%i" %i], params["Grad%i" %i], params["data%i" %i] = unpack_file(params, i)
+                params["E%i" %i],label,R, params["Grad%i" %i], params["data%i" %i] = unpack_file(params["qe_out%i" %i],params,0)
                 params["epot%i" %i] = Ry_to_Ha*params["E%i" %i]    # total energy from QE, the potential energy acting on nuclei
-            data = params["data0"]
+                print params["Grad%i" %i]
+            #data = params["data0"]
             epot = params["epot0"]
+            epot_ex = 0.0
             epot_ex = params["epot1"]  #to print first excited state energy
 
             # Ry/au unit of Force in Quantum espresso
             # So, converting Rydberg to Hartree
             for k in xrange(syst.Number_of_atoms):
-                mol.f[3*k]   = Ry_to_Ha*params["Grad0"][k][0]
-                mol.f[3*k+1] = Ry_to_Ha*params["Grad0"][k][1]
-                mol.f[3*k+2] = Ry_to_Ha*params["Grad0"][k][2]
+                mol.f[3*k]   = params["Grad0"][k].x
+                mol.f[3*k+1] = params["Grad0"][k].y
+                mol.f[3*k+2] = params["Grad0"][k].z
 
             ekin = compute_kinetic_energy(mol)
 

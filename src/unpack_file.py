@@ -84,7 +84,6 @@ def extract_qe_gradients(inp_str,  flag):
     #
 
     grads = []
-
     Ry_to_Ha = 0.5
 
     for a in inp_str:
@@ -94,7 +93,7 @@ def extract_qe_gradients(inp_str,  flag):
         fx = Ry_to_Ha * float(spline[6]) 
         fy = Ry_to_Ha * float(spline[7])
         fz = Ry_to_Ha * float(spline[8])
-        g = VECTOR(-fx,-fy,-fz)
+        g = VECTOR(fx,fy,fz)
         grads.append(g)
 
     if flag == 1:
@@ -129,8 +128,8 @@ def unpack_file(filename,params, flag):
 
     nlines = len(A)
 
-    for a in A:
-        s = a.split()
+    for i in range(0,nlines):
+        s = A[i].split()  #is this A or a????
         # Lines where positions and forces start
         # example:
         #     site n.     atom                  positions (alat units)
@@ -200,14 +199,14 @@ def unpack_file(filename,params, flag):
     label, R = extract_qe_coordinates(A[icoord+1:icoord+1+nat], alat, flag)
 
     # Get gradients
-    grads = extract_qe_gradients(A[icoord+4:icoord+4+nat], flag)
-   
-    param["nel"] = nel
-    param["norb"]= norb
-    param["nat"] = nat
-    param["alat"]= alat    
-    
+    grads = extract_qe_gradients(A[iforce+4:iforce+4+nat], flag)
+    print "nel = ",nel, "norb=",norb, "nat=",nat,"alat=",alat
+    params["nel"] = nel
+    params["norb"]= norb
+    params["nat"] = nat
+    params["alat"]= alat    
+    #print params
 
-    return tot_ene, label, R, grads
+    return tot_ene, label, R, grads, params
 
 
