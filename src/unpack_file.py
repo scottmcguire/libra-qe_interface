@@ -200,7 +200,6 @@ def unpack_file(filename,params, flag):
 
     # Get gradients
     grads = extract_qe_gradients(A[iforce+4:iforce+4+nat], flag)
-    print "nel = ",nel, "norb=",norb, "nat=",nat,"alat=",alat
     params["nel"] = nel
     params["norb"]= norb
     params["nat"] = nat

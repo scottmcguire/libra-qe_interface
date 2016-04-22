@@ -105,14 +105,11 @@ def run_MD(label,syst,data,params):
 
             # Running SCF calculation for different excited states, extracting their Energies and Forces
             for i in xrange(params["no_ex"]):
-                print params["excitations"][i]
                 write_qe_input(params["qe_inp%i" %i],label,mol,params["excitations"][i],params)
                 exe_espresso(params["qe_inp%i" % i], params["qe_out%i" % i] ) 
 
                 params["E%i" %i],label,R, params["Grad%i" %i], params["data%i" %i] = unpack_file(params["qe_out%i" %i],params,0)
                 params["epot%i" %i] = Ry_to_Ha*params["E%i" %i]    # total energy from QE, the potential energy acting on nuclei
-                print params["Grad%i" %i]
-            #data = params["data0"]
             epot = params["epot0"]
             epot_ex = 0.0
             epot_ex = params["epot1"]  #to print first excited state energy
