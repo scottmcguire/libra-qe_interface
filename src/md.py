@@ -37,7 +37,8 @@ from create_qe_input import*
 
 ##############################################################
 
-def run_MD(label,syst,data,params):
+def run_MD(label,syst,params):
+#def run_MD(label,syst,data,params):
     ##
     # Finds the keywords and their patterns and extracts the parameters
     # \param[in,out] syst System object that includes atomic system information.
@@ -68,6 +69,8 @@ def run_MD(label,syst,data,params):
     dt_nucl = params["dt_nucl"]
     Nsnaps = params["Nsnaps"]
     Nsteps = params["Nsteps"]
+    params["norb"] = 12
+    params["nel"] = 12
 
     # Create a variable that will contain propagated nuclear DOFs
     mol = Nuclear(3*syst.Number_of_atoms)
@@ -88,30 +91,30 @@ def run_MD(label,syst,data,params):
         therm.set_Nf_t(3*syst.Number_of_atoms)
         therm.set_Nf_r(0)
         therm.init_nhc()
-
+    epot, ekin, etot, eext = 0.0, 0.0, 0.0, 0.0
     # Run actual calculations
-    for i in xrange(Nsnaps):
+    for ia in xrange(Nsnaps):
 
         for j in xrange(Nsteps):
 
             if MD_type == 1: # NVT-MD
                 # velocity scaling
-                for k in xrange(3*syst.Number_of_atoms):
-                    mol.p[k] = mol.p[k] * therm.vel_scale(0.5*dt_nucl)
+                for ka in xrange(3*syst.Number_of_atoms):
+                    mol.p[ka] = mol.p[ka] * therm.vel_scale(0.5*dt_nucl)
 
             # >>>>>>>>>>> Nuclear propagation starts <<<<<<<<<<<<
             mol.propagate_p(0.5*dt_nucl)
             mol.propagate_q(dt_nucl) 
-
+            params["epot1"] = 0.0
             # Running SCF calculation for different excited states, extracting their Energies and Forces
-            for i in xrange(params["no_ex"]):
+            for i in xrange(len(params["excitations"])):
                 write_qe_input(params["qe_inp%i" %i],label,mol,params["excitations"][i],params)
                 exe_espresso(params["qe_inp%i" % i], params["qe_out%i" % i] ) 
-
-                params["E%i" %i],label,R, params["Grad%i" %i], params["data%i" %i] = unpack_file(params["qe_out%i" %i],params,0)
+                params["E%i" %i],label,R, params["Grad%i" %i] = unpack_file(params["qe_out%i" %i],params["qe_debug_print"])
+                #params["E%i" %i],label,R, params["Grad%i" %i], params["data%i" %i] = unpack_file(params["qe_out%i" %i],params,0)
                 params["epot%i" %i] = Ry_to_Ha*params["E%i" %i]    # total energy from QE, the potential energy acting on nuclei
             epot = params["epot0"]
-            epot_ex = 0.0
+            #epot_ex = 0.0
             epot_ex = params["epot1"]  #to print first excited state energy
 
             # Ry/au unit of Force in Quantum espresso
@@ -133,11 +136,11 @@ def run_MD(label,syst,data,params):
 
             if MD_type == 1: # NVT-MD
                 # velocity scaling
-                for k in xrange(3*syst.Number_of_atoms):
-                    mol.p[k] = mol.p[k] * therm.vel_scale(0.5*dt_nucl)
+                for ka in xrange(3*syst.Number_of_atoms):
+                    mol.p[ka] = mol.p[ka] * therm.vel_scale(0.5*dt_nucl)
 
 
-            t = dt_nucl*(i*Nsteps + j) # simulation time in a.u.
+            t = dt_nucl*(ia*Nsteps + j) # simulation time in a.u.
         ################### Printing results ############################
         # >>>>>>>>>>>>>> Compute energies <<<<<<<<<<<<<<<<<<<<<<<<<
         ekin = compute_kinetic_energy(mol)
@@ -154,9 +157,9 @@ def run_MD(label,syst,data,params):
 
         # Energy
         fe = open(params["ene_file"],"a")
-        fe.write("i= %3i ekin= %8.5f  epot= %8.5f  epot_ex=%8.5f etot= %8.5f  eext = %8.5f curr_T= %8.5f\n" % (i, ekin, epot,epot_ex, etot, eext, curr_T)) 
+        fe.write("i= %3i ekin= %8.5f  epot= %8.5f  epot_ex= %8.5f etot= %8.5f  eext = %8.5f curr_T= %8.5f\n" % (ia, ekin, epot, epot_ex, etot, eext, curr_T)) 
         syst.set_atomic_q(mol.q)
-        syst.print_xyz(params["traj_file"],i)
+        syst.print_xyz(params["traj_file"],ia)
         fe.close()
     # input test_data for debugging
     test_data = {}

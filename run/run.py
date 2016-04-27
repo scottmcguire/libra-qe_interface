@@ -36,22 +36,23 @@ params = {}
 #params["no_ex"] = 2  #number of excited states
 #params["nband"] = 12 #total number of orbitals
 #params["HOMO"] = 6   #orbital number of HOMO
-params["qe_debug_print"] = 1
-params["no_ex"] = 2
-for i in range(0,params["no_ex"]):
-    params["qe_inp0%i" %i] = "x%i.scf.in" %i    # initial input file
-    params["qe_inp%i" %i] = "x%i.scf_wrk.in" %i # working input file 
-    params["qe_out%i" %i] = "x%i.scf.out" %i    # output file
+params["qe_debug_print"] = 0
+#params["no_ex"] = 2
+#params["excitations"] = [ excitation(0,1,0,1), excitation(0,1,1,1) ]
+#for i in range(0,len(params["excitations"])):
+#    params["qe_inp0%i" %i] = "x%i.scf.in" %i    # initial input file
+#    params["qe_inp%i" %i] = "x%i.scf_wrk.in" %i # working input file 
+#    params["qe_out%i" %i] = "x%i.scf.out" %i    # output file
 
 params["nproc"] = 1              # the number of processors
 params["dt_nucl"]=20.0  # time step for nuclear dynamics  ex) 20 a.u. = 0.5 fsec
-params["Nsnaps"]=10      # the number of MD rounds
-params["Nsteps"]=5      # the number of MD steps per snap
+params["Nsnaps"]=50      # the number of MD rounds
+params["Nsteps"]=1      # the number of MD steps per snap
 params["res"]=res_dir   # the directory where the energies and NACs files will be printed out
 params["traj_file"] = params["res"]+"md.xyz"
 params["ene_file"] = params["res"]+"ene.dat"
 
-params["MD_type"] = 1  # NVT ensamble
+params["MD_type"] = 0  # 1 NVT ensamble, 0 NVE ensamble
 #params["MD_type"] = 0  # NVE ensamble
 
 # Thermostat parameters
@@ -68,7 +69,12 @@ sys.path.insert(1,os.environ["libra_hamiltonian_path"] + "/Hamiltonian_Atomistic
 from libcontrol_parameters import *
 
 params["excitations"] = [ excitation(0,1,0,1), excitation(0,1,1,1) ] 
+for i in range(0,len(params["excitations"])):
+    params["qe_inp0%i" %i] = "x%i.scf.in" %i    # initial input file
+    params["qe_inp%i" %i] = "x%i.scf_wrk.in" %i # working input file 
+    params["qe_out%i" %i] = "x%i.scf.out" %i    # output file
 
 
-data, test_data = main.main(params)  # run actual calculations
+#data, test_data = main.main(params)  # run actual calculations
+test_data = main.main(params)  # run actual calculations
 
