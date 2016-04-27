@@ -38,7 +38,6 @@ from create_qe_input import*
 ##############################################################
 
 def run_MD(label,syst,params):
-#def run_MD(label,syst,data,params):
     ##
     # Finds the keywords and their patterns and extracts the parameters
     # \param[in,out] syst System object that includes atomic system information.
@@ -111,18 +110,16 @@ def run_MD(label,syst,params):
                 write_qe_input(params["qe_inp%i" %i],label,mol,params["excitations"][i],params)
                 exe_espresso(params["qe_inp%i" % i], params["qe_out%i" % i] ) 
                 params["E%i" %i],label,R, params["Grad%i" %i] = unpack_file(params["qe_out%i" %i],params["qe_debug_print"])
-                #params["E%i" %i],label,R, params["Grad%i" %i], params["data%i" %i] = unpack_file(params["qe_out%i" %i],params,0)
                 params["epot%i" %i] = Ry_to_Ha*params["E%i" %i]    # total energy from QE, the potential energy acting on nuclei
             epot = params["epot0"]
-            #epot_ex = 0.0
             epot_ex = params["epot1"]  #to print first excited state energy
 
             # Ry/au unit of Force in Quantum espresso
             # So, converting Rydberg to Hartree
             for k in xrange(syst.Number_of_atoms):
-                mol.f[3*k]   = params["Grad0"][k].x
-                mol.f[3*k+1] = params["Grad0"][k].y
-                mol.f[3*k+2] = params["Grad0"][k].z
+                mol.f[3*k]   = -1.0*params["Grad0"][k].x
+                mol.f[3*k+1] = -1.0*params["Grad0"][k].y
+                mol.f[3*k+2] = -1.0*params["Grad0"][k].z
 
             ekin = compute_kinetic_energy(mol)
 

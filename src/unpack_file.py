@@ -93,7 +93,7 @@ def extract_qe_gradients(inp_str,  flag):
         fx = Ry_to_Ha * float(spline[6]) 
         fy = Ry_to_Ha * float(spline[7])
         fz = Ry_to_Ha * float(spline[8])
-        g = VECTOR(fx,fy,fz)
+        g = VECTOR(-fx,-fy,-fz)
         grads.append(g)
 
     if flag == 1:
