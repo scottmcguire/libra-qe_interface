@@ -107,7 +107,7 @@ def extract_qe_gradients(inp_str,  flag):
 
 
 #def unpack_file(filename,params, flag): 
-def unpack_file(filename, flag): 
+def unpack_file(filename, flag,flag1): 
 ##
 # Function for reading and extracting Quantum Espresso
 # output. Extracted parameters are used in classical MD
@@ -208,7 +208,9 @@ def unpack_file(filename, flag):
     #params["nat"] = nat
     #params["alat"]= alat    
     #print params
-
-    return tot_ene, label, R, grads
+    if flag1 == 1:
+        return tot_ene, label, R, grads, norb, nel
+    else:
+        return tot_ene, label, R, grads
 
 
