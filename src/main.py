@@ -17,6 +17,7 @@ import os
 import sys
 import math
 
+
 if sys.platform=="cygwin":
     from cyglibra_core import *
 elif sys.platform=="linux" or sys.platform=="linux2":
@@ -57,18 +58,21 @@ def main(params):
 
     params["cell_dm"], params["qe_inp_templ"] = read_qe_inp_templ(params["qe_inp0"])
 
-    exe_espresso(params["qe_inp0"], params["qe_out0"] )
+    exe_espresso(params["qe_inp0"], params["qe_out0"])
     tot_ene, label, R, grads = unpack_file(params["qe_out0"], params["qe_debug_print"])
 
     ################## Step 2: Initialize molecular system and run MD ###########################
 
     print "Initializing system..."
     df = 0 # debug flag
+    #Generate random number
+    rnd = Random()
+
     # Here we use libra_py module!
     syst = init_system.init_system(label, R, grads, rnd, params["Temperature"], params["sigma_pos"], df, "elements.txt")      
 
 
     # starting MD calculation
-    test_data = run_MD(syst,data,params)
-    return data, test_data
+    test_data = run_MD(label,syst,params)
+    return test_data
 

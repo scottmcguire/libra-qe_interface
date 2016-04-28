@@ -84,7 +84,6 @@ def extract_qe_gradients(inp_str,  flag):
     #
 
     grads = []
-
     Ry_to_Ha = 0.5
 
     for a in inp_str:
@@ -107,7 +106,8 @@ def extract_qe_gradients(inp_str,  flag):
 
 
 
-def unpack_file(filename,params, flag): 
+#def unpack_file(filename,params, flag): 
+def unpack_file(filename, flag): 
 ##
 # Function for reading and extracting Quantum Espresso
 # output. Extracted parameters are used in classical MD
@@ -129,8 +129,10 @@ def unpack_file(filename,params, flag):
 
     nlines = len(A)
 
+    #for i in range(0,nlines):
+    #    s = A[i].split()  #is this A or a????
     for a in A:
-        s = a.split()
+        s = a.split()  #is this A or a????
         # Lines where positions and forces start
         # example:
         #     site n.     atom                  positions (alat units)
@@ -138,9 +140,9 @@ def unpack_file(filename,params, flag):
         #         2           C   tau(   2) = (  -3.7211433   2.3070646  -0.0089072  )
         # ...
         if len(s) > 0 and s[0] == "site"  and s[3] == "positions":
-            icoord = i           
+            icoord = A.index(a)           
         if len(s) > 0 and s[0] == "Forces" and s[1] == "acting":
-            iforce = i
+            iforce = A.index(a)
 
         # Descriptors:
         # example:
@@ -200,13 +202,12 @@ def unpack_file(filename,params, flag):
     label, R = extract_qe_coordinates(A[icoord+1:icoord+1+nat], alat, flag)
 
     # Get gradients
-    grads = extract_qe_gradients(A[icoord+4:icoord+4+nat], flag)
-   
-    param["nel"] = nel
-    param["norb"]= norb
-    param["nat"] = nat
-    param["alat"]= alat    
-    
+    grads = extract_qe_gradients(A[iforce+4:iforce+4+nat], flag)
+    #params["nel"] = nel
+    #params["norb"]= norb
+    #params["nat"] = nat
+    #params["alat"]= alat    
+    #print params
 
     return tot_ene, label, R, grads
 

@@ -12,3 +12,6 @@ im_*
 *.out
 *_1.*
 *_wrk*
+*grid*
+*index*
+*igk*

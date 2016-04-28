@@ -17,11 +17,20 @@ import os
 import sys
 import math
 
-sys.path.insert(1,os.environ["libra_calculators_path"])
-sys.path.insert(1,os.environ["libra_mmath_path"])
+##sys.path.insert(1,os.environ["libra_calculators_path"])
+##sys.path.insert(1,os.environ["libra_mmath_path"])
 
-from libcalculators import *
-from libmmath import *
+##from libcalculators import *
+##from libmmath import *
+
+
+if sys.platform=="cygwin":
+    from cyglibra_core import *
+elif sys.platform=="linux" or sys.platform=="linux2":
+    from liblibra_core import *
+
+from libra_py import *
+
 
 
 def excitation_to_qe_occ(params, state):
@@ -34,12 +43,12 @@ def excitation_to_qe_occ(params, state):
 
 
     norb = params["norb"] # the number of KS orbitals
-    nel = param["nel"]    # the number of electrons
+    nel = params["nel"]    # the number of electrons
 
     # Number of occupied alpha and beta orbitals
     nocc_alp = nel/2  # integer division!
     nocc_bet = nel - nocc_alp
-    homo = nocc_alp
+    homo = nocc_alp -1  # changed indices in order to accomodate with python numbering
 
     # Generate reference (ground state) occupation scheme for alpha and beta orbitals
     gs_alp = []
@@ -56,9 +65,9 @@ def excitation_to_qe_occ(params, state):
             gs_bet.append([i,0.0])
 
     # Compute indices of the orbitals involved in the excitation
-    a = state.from_orbit[0] + homo
+    a = state.from_orbit[0] + homo  
     a_s = state.from_spin[0]  # +1 for alp, -1 for bet
-    b = state.to_orbit[0] + homo
+    b = state.to_orbit[0] + homo   
     b_s = state.to_spin[0]    # +1 for alp, -1 for bet
 
     # Do separate alpha and beta excitations
@@ -66,7 +75,7 @@ def excitation_to_qe_occ(params, state):
     ex_alp = []
     ex_bet = []
     if a_s==1 and a_s == b_s:
-        ex_alp = excite(a,b,gs_alp)
+        ex_alp = excite(a,b,gs_alp) 
         ex_bet = gs_bet
     elif a_s==-1 and a_s == b_s:
         ex_alp = gs_alp
