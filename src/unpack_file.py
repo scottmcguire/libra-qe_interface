@@ -203,13 +203,14 @@ def unpack_file(filename, flag,flag1):
 
     # Get gradients
     grads = extract_qe_gradients(A[iforce+4:iforce+4+nat], flag)
-    #params["nel"] = nel
-    #params["norb"]= norb
-    #params["nat"] = nat
-    #params["alat"]= alat    
+    param = {}
+    param["nel"] = nel
+    param["norb"]= norb
+    param["nat"] = nat
+    param["alat"]= alat    
     #print params
     if flag1 == 1:
-        return tot_ene, label, R, grads, norb, nel
+        return tot_ene, label, R, grads, norb, nel, nat
     else:
         return tot_ene, label, R, grads
 
