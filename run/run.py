@@ -3,7 +3,7 @@ import sys
 import math
 
 
-user = 1  # 0 - Alexey, 1 - Ekadashi
+user = 0  # 0 - Alexey, 1 - Ekadashi
 
 ################ System-specific settings ########################
 if user==0:
