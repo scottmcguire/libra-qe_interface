@@ -47,5 +47,5 @@ def read_qe_inp_templ(inp_filename):
         print templ[i]
     
 
-    return cell_dm, templ
+    return  templ
 

@@ -210,7 +210,7 @@ def unpack_file(filename, flag,flag1):
     param["alat"]= alat    
     #print params
     if flag1 == 1:
-        return tot_ene, label, R, grads, norb, nel, nat
+        return tot_ene, label, R, grads, norb, nel, nat,alat
     else:
         return tot_ene, label, R, grads
 

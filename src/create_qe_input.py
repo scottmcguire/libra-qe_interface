@@ -131,7 +131,7 @@ def write_qe_input(qe_inp, label, mol, excitation, params):
 #
 
     qe_inp_templ = params["qe_inp_templ"]
-    cell_dm = params["cell_dm"]
+    cell_dm = params["alat"]
 
     g = open(qe_inp, "w")     
 
