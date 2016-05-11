@@ -4,6 +4,8 @@
   outdir = './',
   prefix = 'x0',
   tprnfor = .true.
+  disk_io = 'low',
+  wf_collect = .true.,
 /
 
 &SYSTEM
@@ -41,7 +43,8 @@ ATOMIC_SPECIES
  H  1.008  H.pbe-rrkjus_psl.0.1.UPF
 
 
-K_POINTS gamma                  
+K_POINTS automatic
+1 1 1  0 0 0                  
                                
 CELL_PARAMETERS
     15.0000000    0.0000000    0.0000000
@@ -58,4 +61,4 @@ H         -3.15579        3.08584        0.50451
 
 OCCUPATIONS
 2 2 2 2 2 2 0 0 0 0
-0 0
+0 0 0 0 0 0

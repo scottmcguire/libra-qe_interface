@@ -33,11 +33,13 @@ params = {}
 params["qe_debug_print"] = 0
 params["nproc"] = 1              # the number of processors
 params["dt_nucl"]=20.0  # time step for nuclear dynamics  ex) 20 a.u. = 0.5 fsec
-params["Nsnaps"]=5      # the number of MD rounds
-params["Nsteps"]=1      # the number of MD steps per snap
+params["Nsnaps"]=200      # the number of MD rounds
+params["Nsteps"]=2      # the number of MD steps per snap
 params["res"]=res_dir   # the directory where the energies and NACs files will be printed out
 params["traj_file"] = params["res"]+"md.xyz"
 params["ene_file"] = params["res"]+"ene.dat"
+params["S_mat"] = params["res"]+"s_mat"
+params["nspin"] = 1
 
 params["MD_type"] = 0  # 1 NVT ensamble, 0 NVE ensamble
 # Thermostat parameters
@@ -51,6 +53,7 @@ params["sigma_pos"] = 0.01  #Displace atomic position randomly
 sys.path.insert(1,os.environ["libra_hamiltonian_path"] + "/Hamiltonian_Atomistic/Hamiltonian_QM/Control_Parameters")
 from libcontrol_parameters import *
 
+#params["excitations"] = [ excitation(0,1,0,1), excitation(0,1,1,1), excitation(0,1,2,1) ] 
 params["excitations"] = [ excitation(0,1,0,1), excitation(0,1,1,1) ] 
 for i in range(0,len(params["excitations"])):
     params["qe_inp0%i" %i] = "x%i.scf.in" %i    # initial input file

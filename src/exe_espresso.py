@@ -24,12 +24,17 @@ def exe_espresso(inp, out):
 # \param[in] inp The name of the input file
 # \param[in] out The name of the output file
 #
-    #inexp = "x0.exp.in"
-    #outexp = "x0.exp.out"
+    a = inp.split('.')
+    pref = a[0]
+    inexp = pref+".exp.in"   #"x0.exp.in"
+    outexp = pref+".exp.out" #"x0.exp.out"
+    #ss = pref+".save"
+#    print a,pref,inexp,outexp
     os.system("srun pw.x < %s > %s" % (inp,out))
-    #os.system("srun pw_export.x < %s > %s" % (inexp,outexp))
+    #os.system("mv x0.save %s" % ss)
+    os.system("srun pw_export.x < %s > %s" % (inexp,outexp))
 
     # Delete scratch directory and unecessary files
-    os.system("rm *.dat *.wfc* *.igk* *.mix*")
+    #os.system("rm *.dat *.wfc* *.igk* *.mix*")
     #os.system("rm -r *.save") # not sure if we don't need to remove this directory
-
+#exe_espresso("x0.scf.in","x0.scf.out")

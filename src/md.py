@@ -15,6 +15,7 @@
 import os
 import sys
 import math
+import numpy
 
 
 if sys.platform=="cygwin":
@@ -23,6 +24,7 @@ elif sys.platform=="linux" or sys.platform=="linux2":
     from liblibra_core import *
 
 from libra_py import *
+from find_s_mat import *
 
 
 # First, we add the location of the library to test to the PYTHON path
@@ -103,14 +105,35 @@ def run_MD(label,syst,params):
             mol.propagate_p(0.5*dt_nucl)
             mol.propagate_q(dt_nucl) 
             params["epot1"] = 0.0
+            # lets calculate NACS of two states (S0 and S1)
+
             # Running SCF calculation for different excited states, extracting their Energies and Forces
             for i in xrange(len(params["excitations"])):
                 write_qe_input(params["qe_inp%i" %i],label,mol,params["excitations"][i],params)
                 exe_espresso(params["qe_inp%i" % i], params["qe_out%i" % i] ) 
+                #params["coeff_%i"%i] = get_coeff()
+                params["expt"] = "x%i.export/wfc.1"%i
+                params["coeff_%i"%i] = read_qe_wfc(params["expt"], "Kpoint.1")
                 params["E%i" %i],label,R, params["Grad%i" %i] = unpack_file(params["qe_out%i" %i],params["qe_debug_print"],0)
                 params["epot%i" %i] = Ry_to_Ha*params["E%i" %i]    # total energy from QE, the potential energy acting on nuclei
             epot = params["epot0"]
             epot_ex = params["epot1"]  #to print first excited state energy
+            
+            # extract wavefunction information using libcontext library
+            #s_mat = find_s_mat()
+            ovlp_01 = CMATRIX(3,3)
+            ovlp_0 = CMATRIX(3,3)
+            ovlp_1 = CMATRIX(3,3)
+            
+            ovlp_01 = params["coeff_0"].H()*params["coeff_1"] 
+            ovlp_0 = params["coeff_0"].H()*params["coeff_0"] 
+            ovlp_1 = params["coeff_1"].H()*params["coeff_1"] 
+            print ovlp_01.show_matrix()
+            print ovlp_0.show_matrix()
+            print ovlp_1.show_matrix()
+             
+
+
 
             # Ry/au unit of Force in Quantum espresso
             # So, converting Rydberg to Hartree
@@ -136,6 +159,17 @@ def run_MD(label,syst,params):
 
 
             t = dt_nucl*(ia*Nsteps + j) # simulation time in a.u.
+            # Find overlap matrix
+            detaa = find_det(ovlp_01)
+            # lets compute NACS of two state (S0 and S1)
+            nac = 0.0
+            if (ia*Nsteps +j) > 0 :
+                nac = find_nac(params)
+            for i in xrange(len(params["excitations"])):
+                #params["coeff_%i"%i] = get_coeff()
+                params["coeff_old_%i"%i] = params["coeff_%i"%i]
+
+
         ################### Printing results ############################
         # >>>>>>>>>>>>>> Compute energies <<<<<<<<<<<<<<<<<<<<<<<<<
         ekin = compute_kinetic_energy(mol)
@@ -156,6 +190,25 @@ def run_MD(label,syst,params):
         syst.set_atomic_q(mol.q)
         syst.print_xyz(params["traj_file"],ia)
         fe.close()
+        fee = open(params["S_mat"],"a")
+        #fee.write("something")
+        #deta = []
+        #for na in [0,1,2]: #range(5,7):
+        #    detb = []
+        #    for nb in [0,1,2]: #range(5,7):
+        #        detb.append(ovlp_01.get(na,nb))
+        #    deta.append(detb)
+
+        #detaa = numpy.linalg.det(deta)
+        #detaa = find_det(ovlp_01)
+        # lets compute NACS of two state (S0 and S1)
+        #nac = 0.0
+        #nac = find_nac(params) 
+        fee.write("%i S(r)= %s S(im)= %s d(r)= %s d(im)= %s \n" % (ia, str(detaa.real), str(detaa.imag), str(nac.real), str(nac.imag)))
+
+        #for n in xrange(3):
+        #    fee.write("%i ovlp= %s \n" % (ia, str(ovlp_01.get(n,n))))
+        #fee.close()
     # input test_data for debugging
     test_data = {}
 
