@@ -159,12 +159,27 @@ def run_MD(label,syst,params):
 
 
             t = dt_nucl*(ia*Nsteps + j) # simulation time in a.u.
+
             # Find overlap matrix
             detaa = find_det(ovlp_01)
-            # lets compute NACS of two state (S0 and S1)
+            
+            # Update S_matrix
+            S_mat = update_S_matrix(detaa)
+
+            # lets compute NACS of two state (S0 and S1)            
             nac = 0.0
             if (ia*Nsteps +j) > 0 :
                 nac = find_nac(params)
+
+            # Update NAC matrix
+            D_mat = update_D_matrix(nac)
+
+            # Update Energy matrix
+            E_mat = update_E_mat(params)
+
+            # Update Vibronic hamiltonian  
+            H_vib = update_H_vib(nac,E_mat)
+
             for i in xrange(len(params["excitations"])):
                 #params["coeff_%i"%i] = get_coeff()
                 params["coeff_old_%i"%i] = params["coeff_%i"%i]
@@ -186,7 +201,16 @@ def run_MD(label,syst,params):
 
         # Energy
         fe = open(params["ene_file"],"a")
-        fe.write("i= %3i ekin= %8.5f  epot= %8.5f  epot_ex= %8.5f etot= %8.5f  eext= %8.5f curr_T= %8.5f\n" % (ia, ekin, epot, epot_ex, etot, eext, curr_T)) 
+        #fe.write("i= %3i ekin= %8.5f  epot= %8.5f  epot_ex= %8.5f etot= %8.5f  eext= %8.5f curr_T= %8.5f\n" % (ia, ekin, epot, epot_ex, etot, eext, curr_T)) 
+        fe.write("i= %3i ekin= %8.5f  epot= %8.5f  epot_ex= %8.5f etot= %8.5f  eext= %8.5f curr_T= %8.5f\n" % (ia, ekin, E_mat.get(0,0), E_mat.get(1,1), etot, eext, curr_T)) 
+
+        # Writing H_vib matrix elements in the output file
+        for i in xrange(2):
+            fe.write("E_%i%i= %s " % (i,i,str(H_vib.get(i,i))))
+            for j in xrange(2):
+                if j != i :
+                    fe.write("d_%i%i= %s \n" % (i,j,str(H_vib.get(i,j))))
+
         syst.set_atomic_q(mol.q)
         syst.print_xyz(params["traj_file"],ia)
         fe.close()

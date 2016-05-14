@@ -116,6 +116,46 @@ def find_nac(params):
     print "nac = ",nac
     return nac
 
+def update_H_vib(nac,E_mat):
 
+    nst = 2
+    H_vib = CMATRIX(nst,nst)
+    for i in xrange(nst):
+            H_vib.set(i,i,E_mat.get(i,i))
 
+    for i in xrange(nst):
+        for j in xrange(nst):
+            if j != i:
+                H_vib.set(i,j,nac)
 
+    return H_vib
+ 
+
+def update_E_mat(params):
+
+    E_mat = MATRIX(2,2)
+
+    for i in xrange(2):
+        E_mat.set(i,i,params["epot%i"%i])
+
+    return E_mat
+
+def update_S_matrix(detaa):
+    
+    S_mat = CMATRIX(2,2)
+    for i in xrange(2):
+        for j in xrange(2):
+            S_mat.set(i,j,1.0)
+            if j != i :
+                S_mat.set(i,j,detaa)
+
+    return S_mat
+
+def update_D_matrix(nac):
+    D_mat = CMATRIX(2,2)
+    for i in xrange(2):
+        for j in xrange(2):
+            if j != i :
+                D_mat.set(i,j,nac)
+
+    return D_mat
