@@ -26,14 +26,6 @@ elif sys.platform=="linux" or sys.platform=="linux2":
 from libra_py import *
 
 
-# Path the the source code
-# First, we add the location of the library to test to the PYTHON path
-#sys.path.insert(1,os.environ["src_path"]) # Path the the source code
-#sys.path.insert(1,os.environ["libra_mmath_path"])
-#sys.path.insert(1,os.environ["libra_qchem_path"])
-#sys.path.insert(1,os.environ["libra_dyn_path"])
-#sys.path.insert(1,os.environ["libra_chemobjects_path"])
-#sys.path.insert(1,os.environ["libra_hamiltonian_path"])
 
 #Import libraries
 from read_qe_inp_templ import*
@@ -59,7 +51,12 @@ def main(params):
     params["qe_inp_templ"] = read_qe_inp_templ(params["qe_inp0"])
 
     exe_espresso(params["qe_inp0"], params["qe_out0"])
+<<<<<<< HEAD
     tot_ene, label, R, grads,params["norb"],params["nel"],params["nat"],params["alat"] = unpack_file(params["qe_out0"], params["qe_debug_print"],1)
+=======
+    tot_ene, label, R, grads = unpack_file(params["qe_out0"], params, params["qe_debug_print"])
+
+>>>>>>> e8a78542f440390b41a1d078d0d386844e00a8ac
     ################## Step 2: Initialize molecular system and run MD ###########################
 
     print "Initializing system..."

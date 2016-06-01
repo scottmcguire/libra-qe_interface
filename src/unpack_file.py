@@ -24,10 +24,6 @@ elif sys.platform=="linux" or sys.platform=="linux2":
     from liblibra_core import *
 
 
-#sys.path.insert(1,os.environ["libra_mmath_path"])
-#from libmmath import *
-
-
 def extract_qe_coordinates(inp_str, alat, flag):
     ##
     # Extracts atomic labels, nuclear charges, and coordinates of all atoms
@@ -106,8 +102,12 @@ def extract_qe_gradients(inp_str,  flag):
 
 
 
+<<<<<<< HEAD
 #def unpack_file(filename,params, flag): 
 def unpack_file(filename, flag,flag1): 
+=======
+def unpack_file(filename,params, flag): 
+>>>>>>> e8a78542f440390b41a1d078d0d386844e00a8ac
 ##
 # Function for reading and extracting Quantum Espresso
 # output. Extracted parameters are used in classical MD
@@ -203,11 +203,18 @@ def unpack_file(filename, flag,flag1):
 
     # Get gradients
     grads = extract_qe_gradients(A[iforce+4:iforce+4+nat], flag)
+<<<<<<< HEAD
     param = {}
     param["nel"] = nel
     param["norb"]= norb
     param["nat"] = nat
     param["alat"]= alat    
+=======
+    params["nel"] = nel
+    params["norb"]= norb
+    params["nat"] = nat
+    params["alat"]= alat    
+>>>>>>> e8a78542f440390b41a1d078d0d386844e00a8ac
     #print params
     if flag1 == 1:
         return tot_ene, label, R, grads, norb, nel, nat,alat

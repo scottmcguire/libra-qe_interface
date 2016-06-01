@@ -70,6 +70,11 @@ def run_MD(label,syst,params):
     dt_nucl = params["dt_nucl"]
     Nsnaps = params["Nsnaps"]
     Nsteps = params["Nsteps"]
+<<<<<<< HEAD
+=======
+    #params["norb"] = 12
+    #params["nel"] = 12
+>>>>>>> e8a78542f440390b41a1d078d0d386844e00a8ac
 
     # Create a variable that will contain propagated nuclear DOFs
     mol = Nuclear(3*syst.Number_of_atoms)
@@ -111,10 +116,14 @@ def run_MD(label,syst,params):
             for i in xrange(len(params["excitations"])):
                 write_qe_input(params["qe_inp%i" %i],label,mol,params["excitations"][i],params)
                 exe_espresso(params["qe_inp%i" % i], params["qe_out%i" % i] ) 
+<<<<<<< HEAD
                 #params["coeff_%i"%i] = get_coeff()
                 params["expt"] = "x%i.export/wfc.1"%i
                 params["coeff_%i"%i] = read_qe_wfc(params["expt"], "Kpoint.1")
                 params["E%i" %i],label,R, params["Grad%i" %i] = unpack_file(params["qe_out%i" %i],params["qe_debug_print"],0)
+=======
+                params["E%i" %i],label,R, params["Grad%i" %i] = unpack_file(params["qe_out%i" %i],params, params["qe_debug_print"])
+>>>>>>> e8a78542f440390b41a1d078d0d386844e00a8ac
                 params["epot%i" %i] = Ry_to_Ha*params["E%i" %i]    # total energy from QE, the potential energy acting on nuclei
             epot = params["epot0"]
             epot_ex = params["epot1"]  #to print first excited state energy
