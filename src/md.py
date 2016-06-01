@@ -23,21 +23,14 @@ elif sys.platform=="linux" or sys.platform=="linux2":
     from liblibra_core import *
 
 from libra_py import *
-
-
-# First, we add the location of the library to test to the PYTHON path
-##sys.path.insert(1,os.environ["libra_mmath_path"])
-##sys.path.insert(1,os.environ["libra_chemobjects_path"])
-##sys.path.insert(1,os.environ["libra_hamiltonian_path"])
-##sys.path.insert(1,os.environ["libra_dyn_path"])
-
 from exe_espresso import*
 from unpack_file import*
 from create_qe_input import*
-
+from export_wfc import *
+from update_Hvib import *
 ##############################################################
 
-def run_MD(label,syst,params):
+def run_MD(label,syst,params,wfc):
     ##
     # Finds the keywords and their patterns and extracts the parameters
     # \param[in,out] syst System object that includes atomic system information.
@@ -68,9 +61,9 @@ def run_MD(label,syst,params):
     dt_nucl = params["dt_nucl"]
     Nsnaps = params["Nsnaps"]
     Nsteps = params["Nsteps"]
-    #params["norb"] = 12
-    #params["nel"] = 12
-
+    n_el = params["nel"]
+    n_mo = params["num_MO"]
+    no_ex = len(params["excitations"])
     # Create a variable that will contain propagated nuclear DOFs
     mol = Nuclear(3*syst.Number_of_atoms)
     syst.extract_atomic_q(mol.q)
@@ -91,6 +84,14 @@ def run_MD(label,syst,params):
         therm.set_Nf_r(0)
         therm.init_nhc()
     epot, ekin, etot, eext = 0.0, 0.0, 0.0, 0.0
+
+    # Creating external hamiltonian
+    #ham = []
+    ham_vib = CMATRIX(no_ex,no_ex)
+    S_mat = CMATRIX(no_ex,no_ex)
+    ham_adi = MATRIX(no_ex,no_ex)
+    
+
     # Run actual calculations
     for ia in xrange(Nsnaps):
 
@@ -104,15 +105,25 @@ def run_MD(label,syst,params):
             # >>>>>>>>>>> Nuclear propagation starts <<<<<<<<<<<<
             mol.propagate_p(0.5*dt_nucl)
             mol.propagate_q(dt_nucl) 
+
             params["epot1"] = 0.0
+            # ======= Compute forces and energies using QUANTUM ESPRESSO ============
             # Running SCF calculation for different excited states, extracting their Energies and Forces
             for i in xrange(len(params["excitations"])):
                 write_qe_input(params["qe_inp%i" %i],label,mol,params["excitations"][i],params)
-                exe_espresso(params["qe_inp%i" % i], params["qe_out%i" % i] ) 
-                params["E%i" %i],label,R, params["Grad%i" %i] = unpack_file(params["qe_out%i" %i],params, params["qe_debug_print"])
+                exe_espresso(params["qe_inp%i" % i], params["qe_out%i" % i] )
+                wfc["coeff_%i"%i] = read_qe_wfc("x%i.export/wfc.1"%i, "Kpoint.1", n_el, n_mo)
+                params["E%i" %i],label,R, params["Grad%i" %i] = unpack_file(params["qe_out%i" %i],params["qe_debug_print"],0)
                 params["epot%i" %i] = Ry_to_Ha*params["E%i" %i]    # total energy from QE, the potential energy acting on nuclei
             epot = params["epot0"]
             epot_ex = params["epot1"]  #to print first excited state energy
+
+            #Updating vibronic hamiltonian
+            update_vibronic_hamiltonian(ham_adi, ham_vib, S_mat, wfc, params)
+
+            # Old cofficient is now new coefficient matrix which is used to NACs calculation
+            for i in xrange(len(params["excitations"])):
+                wfc["coeff_old_%i"%i] = wfc["coeff_%i"%i]
 
             # Ry/au unit of Force in Quantum espresso
             # So, converting Rydberg to Hartree

@@ -131,12 +131,17 @@ def write_qe_input(qe_inp, label, mol, excitation, params):
 #
 
     qe_inp_templ = params["qe_inp_templ"]
-    cell_dm = params["cell_dm"]
-
+    cell_dm = params["alat"]
+    pp = qe_inp.split('.')
+    pfx = pp[0]
     g = open(qe_inp, "w")     
 
     # Write control parameters section
     for a in qe_inp_templ:
+        aa = a.split()
+        if len(aa) >0 and aa[0] == "prefix":
+            #aa[2] = "'%s',"%pfx
+            a = "  prefix = '%s',\n"%pfx        
         g.write(a)
     g.write("\n")
 
@@ -153,6 +158,14 @@ def write_qe_input(qe_inp, label, mol, excitation, params):
 
     # Single excitations with no spin-polarization 
     occ, occ_alp, occ_bet = excitation_to_qe_occ(params, excitation)
-    g.write(print_occupations(occ))
-
+    if params["nspin"] <= 1:
+        g.write(print_occupations(occ))
+        g.write(""+'\n')
+    if params["nspin"] >1:
+        g.write(print_occupations(occ_alp))
+        g.write(""+'\n')
+        g.write(print_occupations(occ_bet))
+        
     g.close()
+
+

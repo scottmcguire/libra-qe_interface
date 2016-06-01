@@ -30,8 +30,11 @@ from libra_py import *
 #Import libraries
 from read_qe_inp_templ import*
 from exe_espresso import*
+from create_qe_input import*
 from unpack_file import*
 from md import *
+from export_wfc import *
+
 
 def main(params):
 ##
@@ -51,7 +54,7 @@ def main(params):
     params["qe_inp_templ"] = read_qe_inp_templ(params["qe_inp0"])
 
     exe_espresso(params["qe_inp0"], params["qe_out0"])
-    tot_ene, label, R, grads = unpack_file(params["qe_out0"], params, params["qe_debug_print"])
+    tot_ene, label, R, grad,params["norb"],params["nel"],params["nat"],params["alat"] = unpack_file(params["qe_out0"], params["qe_debug_print"],1)
 
     ################## Step 2: Initialize molecular system and run MD ###########################
 
@@ -61,10 +64,29 @@ def main(params):
     rnd = Random()
 
     # Here we use libra_py module!
-    syst = init_system.init_system(label, R, grads, rnd, params["Temperature"], params["sigma_pos"], df, "elements.txt")      
+    syst = init_system.init_system(label, R, grad, rnd, params["Temperature"], params["sigma_pos"], df, "elements.txt")      
+
+    # Create a variable that will contain propagated nuclear DOFs
+    mol = Nuclear(3*syst.Number_of_atoms)
+    syst.extract_atomic_q(mol.q)
+    syst.extract_atomic_p(mol.p)
+    syst.extract_atomic_f(mol.f)
+    syst.extract_atomic_mass(mol.mass)
+
+    
+    n_el = params["nel"]
+    n_mo = params["num_MO"]
+    wfc = {}  # wavefunction dictionary, where all the coefficients of the MO basis will be saved
+    # Running SCF calculation for different excited states, extracting their Energies, Forces and wavefucntion coefficients
+    # savings coefficients as coeff_old
+    for i in xrange(len(params["excitations"])):
+        write_qe_input(params["qe_inp%i" %i],label,mol,params["excitations"][i],params)
+        exe_espresso(params["qe_inp%i" % i], params["qe_out%i" % i] )
+        wfc["coeff_old_%i"%i] = read_qe_wfc("x%i.export/wfc.1"%i, "Kpoint.1", n_el, n_mo)
+
 
 
     # starting MD calculation
-    test_data = run_MD(label,syst,params)
+    test_data = run_MD(label,syst,params,wfc)
     return test_data
 

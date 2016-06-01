@@ -2,10 +2,8 @@
   calculation = 'scf',
   pseudo_dir = '/projects/academic/alexeyak/Software/PSEUDO/SSSP/SSSP_acc_PBE/',
   outdir = './',
-  prefix = 'x0',
+  prefix = 'x1',
   tprnfor = .true.
-  disk_io = 'low',
-  wf_collect = .true.,
 /
 
 &SYSTEM
@@ -14,7 +12,7 @@
   nat = 6,
   ntyp = 2,
   nspin = 1,
-  nbnd = 12,
+  nbnd = 16,
   ecutwfc = 30,
   tot_charge = 0.0,
   starting_magnetization(1) = 0.01
@@ -43,8 +41,7 @@ ATOMIC_SPECIES
  H  1.008  H.pbe-rrkjus_psl.0.1.UPF
 
 
-K_POINTS automatic
-1 1 1  0 0 0                  
+K_POINTS gamma                  
                                
 CELL_PARAMETERS
     15.0000000    0.0000000    0.0000000
@@ -62,3 +59,4 @@ H         -3.15579        3.08584        0.50451
 OCCUPATIONS
 2 2 2 2 2 2 0 0 0 0
 0 0 0 0 0 0
+

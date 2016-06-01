@@ -3,7 +3,7 @@ import sys
 import math
 
 
-user = 0  # 0 - Alexey, 1 - Ekadashi
+user = 1  # 0 - Alexey, 1 - Ekadashi
 
 ################ System-specific settings ########################
 if user==0:
@@ -54,6 +54,7 @@ sys.path.insert(1,os.environ["libra_hamiltonian_path"] + "/Hamiltonian_Atomistic
 from libcontrol_parameters import *
 
 #params["excitations"] = [ excitation(0,1,0,1), excitation(0,1,1,1), excitation(0,1,2,1) ] 
+params["num_MO"] = 3  # number of MO basis used in constructing electronic wavefunction
 params["excitations"] = [ excitation(0,1,0,1), excitation(0,1,1,1) ] 
 for i in range(0,len(params["excitations"])):
     params["qe_inp0%i" %i] = "x%i.scf.in" %i    # initial input file
