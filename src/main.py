@@ -51,12 +51,8 @@ def main(params):
     params["qe_inp_templ"] = read_qe_inp_templ(params["qe_inp0"])
 
     exe_espresso(params["qe_inp0"], params["qe_out0"])
-<<<<<<< HEAD
-    tot_ene, label, R, grads,params["norb"],params["nel"],params["nat"],params["alat"] = unpack_file(params["qe_out0"], params["qe_debug_print"],1)
-=======
     tot_ene, label, R, grads = unpack_file(params["qe_out0"], params, params["qe_debug_print"])
 
->>>>>>> e8a78542f440390b41a1d078d0d386844e00a8ac
     ################## Step 2: Initialize molecular system and run MD ###########################
 
     print "Initializing system..."
