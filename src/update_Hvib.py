@@ -38,7 +38,7 @@ def find_det(A0,A1,n_mo):
         for nb in xrange(n_mo):   
             detb.append(ovlp_01.get(na,nb))
         deta.append(detb)
-    detaa = numpy.linalg.det(deta)
+    detaa = (1.0/math.factorial(n_mo))*(numpy.linalg.det(deta))
     return detaa
 
 
