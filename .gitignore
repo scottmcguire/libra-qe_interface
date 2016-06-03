@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 *.nfs*
 re_*
 im_*
@@ -5,11 +6,31 @@ im_*
 *.py~
 *.xyz
 *.dat
+=======
+*.*~
+*.pyc
+slurm*
+*.out
+.nfs*
+*_pop*
+*.xyz
+*.txt
+*.dat
+*_Ham_*
+*wrk.inp
+run/H2O_wrk.inp
+*.nfs*
+re_*
+im_*
+>>>>>>> 0780160722fa3c91c7b4f5c4512ca2cbb02d1481
 *.wfc*
 *.UPF
 *.xml
 *.md
+<<<<<<< HEAD
 *.out
+=======
+>>>>>>> 0780160722fa3c91c7b4f5c4512ca2cbb02d1481
 *_1.*
 *_wrk*
 *grid*
@@ -17,3 +38,7 @@ im_*
 *igk*
 *.mix*
 wfc*
+<<<<<<< HEAD
+=======
+
+>>>>>>> 0780160722fa3c91c7b4f5c4512ca2cbb02d1481
