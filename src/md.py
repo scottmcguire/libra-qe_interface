@@ -14,11 +14,6 @@
 # Nose-Hoover thermostat, execute TD-SE and SH calculations, and set initial system.
 #
 
-from create_gamess_input import *
-from gamess_to_libra import *
-from vibronic_hamiltonian import *
-import print_results
-
 import os
 import sys
 import math
@@ -28,10 +23,18 @@ if sys.platform=="cygwin":
     from cyglibra_core import *
 elif sys.platform=="linux" or sys.platform=="linux2":
     from liblibra_core import *
-
 from libra_py import *
 
 #####################################################
+from create_input_gms import *
+from create_input_qe import *
+from x_to_libra_gms import *
+from x_to_libra_qe import *
+from hamiltonian_vib import *
+import print_results_qe
+
+
+##############################################################
 
 def init_files(params):
     ## 
@@ -74,7 +77,7 @@ def init_files(params):
 
 
 
-def run_MD(syst,el,ao,E,sd_basis,params,label,Q):
+def run_MD(syst,el,ao,E,sd_basis,params,label,Q, active_space):
     ##
     # This function handles a swarm of trajectories.
     # When NA-MD is utilized (by specifying the TSH method), we use the CPA with isotropic
@@ -92,6 +95,9 @@ def run_MD(syst,el,ao,E,sd_basis,params,label,Q):
     # sd_basis[i] is the list of CMATRIX objects representing SD for the "trajectory/initial condition/realization" i. Then sd_basis[i][j] corresponds to the determinant j of the initial condition i
     # \param[in] label    list of atomic labels e.g. H, He, Li, etc...
     # \param[in] Q        list of atomic charges
+    # \param[in] active_space The list of indices (starting from 1) of the MOs to include in
+    # calculations (and to read from the QE output files)
+
 
     # This function executes classical MD in Libra and electronic structure calculation
     # in GAMESS iteratively and simulates excited electron dynamics with MF and SH way. 
@@ -196,6 +202,7 @@ def run_MD(syst,el,ao,E,sd_basis,params,label,Q):
                         # ======= Compute forces and energies using external package ============
                         tot_ene0 = 0.0
                         nac = CMATRIX()
+                        all_grads = []
                         opt = 0 # default
 
                         if params["interface"]=="GAMESS":
@@ -205,38 +212,33 @@ def run_MD(syst,el,ao,E,sd_basis,params,label,Q):
                             exe_gamess(params)
                        
                             # update AO, MO, and gradients
-                            tot_ene0, Grad, mu0, E_mol_red, sd_basis[cnt], nac = gamess_to_libra(params, ao[cnt], E[cnt], sd_basis[cnt], str(ij) )
+                            E_mol_red, nac, sd_basis[cnt], all_grads, tot_ene0, mu0 = gamess_to_libra(params, ao[cnt], E[cnt], sd_basis[cnt], str(ij) )
                             tot_ene.append(tot_ene0); mu.append(mu0); # store total energy and dipole moment
-                            # update forces
-                            for k in xrange(syst[cnt].Number_of_atoms):
-                                for st in xrange(nstates):
-                                    d1ham_adi[cnt][3*k+0].set(st,st,Grad[k].x)
-                                    d1ham_adi[cnt][3*k+1].set(st,st,Grad[k].y)
-                                    d1ham_adi[cnt][3*k+2].set(st,st,Grad[k].z)
-
 
                         elif params["interface"]=="QE":
                             opt = 1 # use true SD wavefunctions
 
                             # update MO and gradients
-                            E_mol_red, nac, E[cnt], sd_basis[cnt], all_grads = qe_to_libra(params, E[cnt], sd_basis[cnt], label[cnt], mol[cnt], str(ij))
+                            E_mol_red, nac, E[cnt], sd_basis[cnt], all_grads = qe_to_libra(params, E[cnt], sd_basis[cnt], label[cnt], mol[cnt], str(ij), active_space)
+                            tot_ene.append(E[cnt])
 
-                            # update forces
-                            for k in xrange(syst[cnt].Number_of_atoms):
-                                for st in xrange(nstates):
-                                    d1ham_adi[cnt][3*k+0].set(st,st,all_grads[st][k].x)
-                                    d1ham_adi[cnt][3*k+1].set(st,st,all_grads[st][k].y)
-                                    d1ham_adi[cnt][3*k+2].set(st,st,all_grads[st][k].z)
+                        # ============== Common blocks ==================
 
 
+                        # update forces
+                        for k in xrange(syst[cnt].Number_of_atoms):
+                            for st in xrange(nstates):
+                                d1ham_adi[cnt][3*k+0].set(st,st,all_grads[st][k].x)
+                                d1ham_adi[cnt][3*k+1].set(st,st,all_grads[st][k].y)
+                                d1ham_adi[cnt][3*k+2].set(st,st,all_grads[st][k].z)
 
-                        #========= Update the matrices that are bound to the Hamiltonian =========
-                        #Compose electronic and vibronic Hamiltonians
+                        # Update the matrices that are bound to the Hamiltonian 
+                        # Compose electronic and vibronic Hamiltonians
                         update_vibronic_hamiltonian(ham_adi[cnt], ham_vib[cnt], params,E_mol_red,nac, str(ij), opt)
 
            
                         # update potential energy
-                        epot = tot_ene0 + etot_compute_forces(mol[cnt], el[cnt], ham[cnt], f_pot)  #  f_pot = 0 - Ehrenfest, 1 - TSH
+                        epot = tot_ene0 + compute_forces(mol[cnt], el[cnt], ham[cnt], f_pot)  #  f_pot = 0 - Ehrenfest, 1 - TSH
                         ekin = compute_kinetic_energy(mol[cnt])
                         etot = epot + ekin
           
@@ -275,12 +277,13 @@ def run_MD(syst,el,ao,E,sd_basis,params,label,Q):
         ################### Printing results ############################
 
         # print out SE and SH populations
-        se_pop, sh_pop = print_results.pops_ave_TSH_traj(i,el,params)
-        print_results.pops_ave_geometry(i,nstates,se_pop,sh_pop,params)
+        se_pop, sh_pop = print_results_qe.pops_ave_TSH_traj(i,el,params)
+        print_results_qe.pops_ave_geometry(i,nstates,se_pop,sh_pop,params)
 
         # print auxiliary files: MD, Energy, and dipole moment trajectories
         if params["print_aux_results"]==1:
-            print_results.auxiliary(i,mol,el,ham,syst,ao,therm,mu,tot_ene,f_pot,params)
+            #print_results.auxiliary(i,mol,el,ham,syst,ao,therm,mu,tot_ene,f_pot,params)
+            print_results_qe.auxiliary(i,mol,el,ham,syst,therm,tot_ene,f_pot,params)
 
         print "       ********* %i snap ends ***********" % i
         print 

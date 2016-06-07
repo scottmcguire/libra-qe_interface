@@ -106,7 +106,8 @@ def overlap_sd(MO1, MO2):
 # Here, Norb - the number of MOs in the set, should be the same for each object
 # Npw - the number of basis functions (plane waves) used to represent the MO
 #
-
+    print "mo1_rows=",MO1.num_of_rows,"mo2_rows=", MO2.num_of_rows
+    print "mo1_cols=",MO1.num_of_cols,"mo2_cols=", MO2.num_of_cols
     if MO1.num_of_rows != MO2.num_of_rows:
         print "The vertical dimensions of the two matrices do not match"
         sys.exit(0)

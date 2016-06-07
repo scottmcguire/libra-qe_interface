@@ -21,6 +21,8 @@ elif sys.platform=="linux" or sys.platform=="linux2":
     from liblibra_core import *
 
 
+from states import *
+
 def compute_Hvib(H_el,NAC):
 ##
 # Compute the vibronic Hamiltonian
@@ -46,7 +48,7 @@ def compute_Hvib(H_el,NAC):
 
 
 
-def update_vibronic_hamiltonian_gms(ham_el, ham_vib, params,E_mol_red,D_mol_red,suffix, opt):
+def update_vibronic_hamiltonian(ham_el, ham_vib, params,E_mol_red,D_mol_red,suffix, opt):
     ##
     #
     # This function transforms the 1- or N- electron energies matrix and the matrix of 

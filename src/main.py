@@ -1,9 +1,5 @@
 #*********************************************************************************
-<<<<<<< HEAD
 #* Copyright (C) 2016 Ekadashi Pradhan, Alexey V. Akimov
-=======
-#* Copyright (C) 2016 Kosuke Sato, Alexey V. Akimov
->>>>>>> 0780160722fa3c91c7b4f5c4512ca2cbb02d1481
 #*
 #* This file is distributed under the terms of the GNU General Public License
 #* as published by the Free Software Foundation, either version 2 of
@@ -14,15 +10,6 @@
 #*********************************************************************************/
 
 ## \file main.py
-<<<<<<< HEAD
-# This module defines the function which communicates QUANTUM ESPRESSO output data
-# to Libra and vice versa.
-# It outputs the files needed for excited electron dynamics simulation.
-import os
-import sys
-import math
-
-=======
 # This module sets initial parameters from GAMESS output, creates initial system, 
 # and executes runMD script.
 # 
@@ -32,85 +19,22 @@ import os
 import sys
 import math
 import copy
->>>>>>> 0780160722fa3c91c7b4f5c4512ca2cbb02d1481
 
 if sys.platform=="cygwin":
     from cyglibra_core import *
 elif sys.platform=="linux" or sys.platform=="linux2":
     from liblibra_core import *
-
 from libra_py import *
-<<<<<<< HEAD
 
 
 
-#Import libraries
-from read_qe_inp_templ import*
-from exe_espresso import*
-from create_qe_input import*
-from unpack_file import*
+
+
+from create_input_gms import *
+from create_input_qe import *
+from x_to_libra_gms import *
+from x_to_libra_qe import *
 from md import *
-from export_wfc import *
-
-
-def main(params):
-##
-# Finds the keywords and their patterns and extracts the parameters
-# \param[in] params : the input data from "submit_templ.slm", in the form of dictionary
-# This function prepares initial parameters from QUANTUM ESPRESSO output file
-# and executes classical MD in Libra and Electronic Structure Calculation in QUANTUM ESPRESSO
-# iteratively.
-#
-# Used in:  main.py
-
-    ################# Step 0: Use the initial file to create a working input file ###############
-    os.system("cp %s %s" %(params["qe_inp00"], params["qe_inp0"]))
-
-    ################# Step 1: Read initial input and run first QS calculation ##################    
-
-    params["qe_inp_templ"] = read_qe_inp_templ(params["qe_inp0"])
-
-    exe_espresso(params["qe_inp0"], params["qe_out0"])
-    tot_ene, label, R, grad,params["norb"],params["nel"],params["nat"],params["alat"] = unpack_file(params["qe_out0"], params["qe_debug_print"],1)
-
-    ################## Step 2: Initialize molecular system and run MD ###########################
-
-    print "Initializing system..."
-    df = 0 # debug flag
-    #Generate random number
-    rnd = Random()
-
-    # Here we use libra_py module!
-    syst = init_system.init_system(label, R, grad, rnd, params["Temperature"], params["sigma_pos"], df, "elements.txt")      
-
-    # Create a variable that will contain propagated nuclear DOFs
-    mol = Nuclear(3*syst.Number_of_atoms)
-    syst.extract_atomic_q(mol.q)
-    syst.extract_atomic_p(mol.p)
-    syst.extract_atomic_f(mol.f)
-    syst.extract_atomic_mass(mol.mass)
-
-    
-    n_el = params["nel"]
-    n_mo = params["num_MO"]
-    wfc = {}  # wavefunction dictionary, where all the coefficients of the MO basis will be saved
-    # Running SCF calculation for different excited states, extracting their Energies, Forces and wavefucntion coefficients
-    # savings coefficients as coeff_old
-    for i in xrange(len(params["excitations"])):
-        write_qe_input(params["qe_inp%i" %i],label,mol,params["excitations"][i],params)
-        exe_espresso(params["qe_inp%i" % i], params["qe_out%i" % i] )
-        wfc["coeff_old_%i"%i] = read_qe_wfc("x%i.export/wfc.1"%i, "Kpoint.1", n_el, n_mo)
-
-
-
-    # starting MD calculation
-    test_data = run_MD(label,syst,params,wfc)
-    return test_data
-
-=======
-from gamess_to_libra import *
-from md import *
-from create_gamess_input import *
 
 
 def main(params):
@@ -139,43 +63,97 @@ def main(params):
 
     ntraj = nstates*ninit*num_SH_traj
 
-    ################# Step 0: Use the initial file to create a working input file ###############
- 
-    os.system("cp %s %s" %(params["gms_inp0"], params["gms_inp"]))
-
-    ################# Step 1: Read initial input and run first GMS calculation ##################    
-    
-    params["gms_inp_templ"] = read_gms_inp_templ(params["gms_inp"])
-
+    #######
+    active_space = [6,7,8]  # Lets use HOMO and LUMO orbitals first
+    print "Implement the algorithm to define the active space"
     #sys.exit(0)
-    exe_gamess(params)
+    ######
 
-    label, Q, R, grad, e, c, ao, tot_ene = extract(params["gms_out"],params["debug_gms_unpack"])
+    ################# Step 0: Use the initial file to create a working input file ###############
 
+    if params["interface"]=="GAMESS": 
+        os.system("cp %s %s" %(params["gms_inp0"], params["gms_inp"]))
+
+    elif params["interface"]=="QE":
+        for ex_st in xrange(nstates):
+            os.system("cp x%i.scf.in x%i.scf_wrk.in" % (ex_st, ex_st))
+
+
+    #### Step 1: Read initial input, run first calculation, and initialize the "global" variables ####
+
+    # Initialize variables for a single trajectory first!
+    label, Q, R, ao, tot_ene = [], None, None, [], None
+    sd_basis = []
+    all_grads = []
+    e = MATRIX(nstates,nstates)
+    
+    if params["interface"]=="GAMESS":
+
+        params["gms_inp_templ"] = read_gms_inp_templ(params["gms_inp"])
+        exe_gamess(params)
+        label, Q, R, grads, e, c, ao, tot_ene = gms_extract(params["gms_out"],params["debug_gms_unpack"])
+        sd_basis.append(c)
+        all_grads.append(grads)
+
+    
+    elif params["interface"]=="QE":
+        params["qe_inp_templ"] = []
+        for ex_st in xrange(nstates):
+
+            params["qe_inp_templ"].append( read_qe_inp_templ("x%i.scf_wrk.in" % ex_st) )
+            exe_espresso(ex_st)
+            flag = 0
+            tot_ene, label, R, grads, sd_ex, params["norb"], params["nel"], params["nat"], params["alat"] = qe_extract("x%i.scf.out" % ex_st, flag, active_space, ex_st)
+
+            sd_basis.append(sd_ex)
+            all_grads.append(grads)
+            e.set(ex_st, ex_st, tot_ene)
+
+
+    # Now, clone the single-trajectory variables, to initialize the bunch of such parameters
+    # for all trajectories
+    sd_basis_list = []
+    ham_el_list = []    
     ao_list = []
     e_list = []
-    c_list = []
     grad_list = []
     label_list = []
     Q_list = []
     R_list = []
 
     for i in xrange(ntraj):
-        # AO
-        ao_tmp = []
-        for x in ao:
-            ao_tmp.append(AO(x))
-        ao_list.append(ao_tmp)
+        if params["interface"]=="GAMESS":
+            # AO
+            ao_tmp = []
+            for x in ao:
+                ao_tmp.append(AO(x))
+            ao_list.append(ao_tmp)
+            # Q
+            qq  = []
+            for i in xrange(len(label)):
+                qq.append(Q[i])
+            Q_list.append(qq)
 
-        # E and C
+        # E 
         e_list.append(MATRIX(e))
-        c_list.append(MATRIX(c))        
+
+        # Slater determinants
+        # eventually, the ordering is this: sd_basis_list[traj][ex_st] - type CMATRIX
+        sd_basis_tr = []
+        for sd in sd_basis:        
+            sd_basis_tr.append(CMATRIX(sd))
+        sd_basis_list.append(sd_basis_tr)
 
         # Gradients
-        grd = []
-        for g in grad:
-            grd.append(VECTOR(g))
-        grad_list.append(grd)
+        # eventually, the ordering is this: grad_list[traj][ex_st][n_atom] - type VECTOR
+        grd2 = []
+        for grad in all_grads: # over all excited states
+            grd1 = []
+            for g in grad:     # over all atoms
+                grd1.append(VECTOR(g))
+            grd2.append(grd1)
+        grad_list.append(grd2)
+    
 
         # Coords
         rr = []
@@ -183,15 +161,13 @@ def main(params):
             rr.append(VECTOR(r))
         R_list.append(rr)
 
-        # Labels and Q
+        # Labels
         lab = []
-        qq  = []
         for i in xrange(len(label)):
             lab.append(label[i])
-            qq.append(Q[i])
         label_list.append(lab)
-        Q_list.append(qq)
         
+
 
     ################## Step 2: Initialize molecular system and run MD part with TD-SE and SH####
 
@@ -208,7 +184,8 @@ def main(params):
                 print "Create a copy of a system"  
                 df = 0 # debug flag
                 # Here we use libra_py module!
-                x = init_system.init_system(label_list[i], R_list[i], grad_list[i], rnd, params["Temperature"], params["sigma_pos"], df, "elements.txt")
+                # Utilize the gradients on the ground (0) excited state
+                x = init_system.init_system(label_list[i], R_list[i], grad_list[i][0], rnd, params["Temperature"], params["sigma_pos"], df, "elements.txt")
                 syst.append(x)    
 
                 print "Create an electronic object"
@@ -217,9 +194,9 @@ def main(params):
     # set list of SH state trajectories
 
     print "run MD"
-    run_MD(syst,el,ao_list,e_list,c_list,params,label_list, Q_list)
+    if params["interface"]=="GAMESS":
+        run_MD(syst,el,ao_list,e_list,sd_basis_list,params,label_list, Q_list, active_space)
+    elif params["interface"]=="QE":
+        run_MD(syst,el,ao_list,e_list,sd_basis_list,params,label_list, Q_list, active_space)
     print "MD is done"
-    sys.exit(0)
 
-    #return data, test_data
->>>>>>> 0780160722fa3c91c7b4f5c4512ca2cbb02d1481

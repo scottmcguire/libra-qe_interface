@@ -24,10 +24,13 @@ if sys.platform=="cygwin":
 elif sys.platform=="linux" or sys.platform=="linux2":
     from liblibra_core import *
 
-from extract import *
+from extract_qe import *
 from overlap import *
-from Ene_NAC import *
-from moment import *
+from hamiltonian_el import *
+from create_input_qe import *
+from misc import *
+#from Ene_NAC import *
+#from moment import *
 
 
 
@@ -53,11 +56,11 @@ def exe_espresso(i):
 
 
 
-def qe_to_libra(params, E, sd_basis, label, mol, suff):
+def qe_to_libra(params, E, sd_basis, label, mol, suff, active_space):
     ## 
     # Finds the keywords and their patterns and extracts the parameters
     # \param[in] params :  contains input parameters , in the directory form
-    # \param[in] E  :  molecular energies at "t" old, will be updated (MATRIX object)
+    # \param[in,out] E  :  molecular energies at "t" old, will be updated (MATRIX object)
     # \param[in] sd_basis :  basis of Slater determinants at "t" old (list of CMATRIX object)
     # \param[in] label : the list of atomic names 
     # \param[in] mol : the object of Nuclear type - contains the info about molecular geometry
@@ -65,6 +68,9 @@ def qe_to_libra(params, E, sd_basis, label, mol, suff):
     # this suffix is now considered to be of a string type - so you can actually encode both the
     # iteration number (MD timestep), the nuclear cofiguration (e.g. trajectory), and any other
     # related information
+    # \param[in] active_space The list of indices (starting from 1) of the MOs to include in
+    # calculations (and to read from the QE output files)
+
     #
     # This function outputs the files for excited electron dynamics
     # in "res" directory.
@@ -79,9 +85,6 @@ def qe_to_libra(params, E, sd_basis, label, mol, suff):
 
     nstate = len(params["excitations"])
 
-    active_space = []
-    # need to define it based on params["excitations"]
-
     sd_basis2 = []    # this will be a list of CMATRIX objects, Note: each object represents a Slater Determinant
     all_grads = [] # this will be a list of lists of VECTOR objects
     E2 = MATRIX(nstate,nstate)
@@ -89,7 +92,7 @@ def qe_to_libra(params, E, sd_basis, label, mol, suff):
 
     #======== Run QE calculations and get the info at time step t+dt ========
 
-    for ex_st in xrange(nstates): # for each excited configuration
+    for ex_st in xrange(nstate): # for each excited configuration
                                   # run a separate set of QE calculations
 
         write_qe_input(ex_st,label,mol,params)
@@ -121,20 +124,20 @@ def qe_to_libra(params, E, sd_basis, label, mol, suff):
     D_mol = NAC(P12,P21,params["dt_nucl"])
 
     # reduce the matrix size
-    E_mol_red = reduce_matrix(E_mol,params["min_shift"], params["max_shift"],params["HOMO"])
-    D_mol_red = reduce_matrix(D_mol,params["min_shift"], params["max_shift"],params["HOMO"])
+    #E_mol_red = reduce_matrix(E_mol,params["min_shift"], params["max_shift"],params["HOMO"])
+    #D_mol_red = reduce_matrix(D_mol,params["min_shift"], params["max_shift"],params["HOMO"])
     ### END TO DO
 
     if params["print_mo_ham"]==1:
         E_mol.show_matrix(params["mo_ham"] + "full_re_Ham_" + suff)
         D_mol.show_matrix(params["mo_ham"] + "full_im_Ham_" + suff)
-        E_mol_red.show_matrix(params["mo_ham"] + "reduced_re_Ham_" + suff)
-        D_mol_red.show_matrix(params["mo_ham"] + "reduced_im_Ham_" + suff)
+#        E_mol_red.show_matrix(params["mo_ham"] + "reduced_re_Ham_" + suff)
+#        D_mol_red.show_matrix(params["mo_ham"] + "reduced_im_Ham_" + suff)
 
 
     # store "t+dt"(new) parameters on "t"(old) ones
-    E = MATRIX(E2)
-    MO = MATRIX(MO2)
+    E = MATRIX(E2)  # update energy
+                    # the returned energy E_mol is at t+dt/2
 
     # Returned data:
     # 
