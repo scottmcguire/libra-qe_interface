@@ -33,6 +33,47 @@ from libra_py import *
 
 
 
+
+#
+def read_qe_inp_templ(inp_filename):
+##
+# Reading and storing template input file for QE calculations. The input file is essentially a
+# normal input file, but we store only the constant section (control option), not the
+# coordinates. The latter will be updated at each iteration using the propagated objects
+#
+# \param[in] inp_filename The name of the initial input file, which will serve as a template
+#
+
+    f = open(inp_filename,"r")
+    templ = f.readlines()
+    f.close()
+
+    for a in templ:
+        s = a.split()
+        if len(s) > 0 and s[0] == "celldm(1)" and s[1] == "=":
+            sa = s[2].split(',')
+            cell_dm = float(sa[0])
+            break
+
+    # Find the line preceeding the actual atomic coordinates
+    for a in templ:
+        s = a.split()
+        if len(s) > 0 and s[0] == "ATOMIC_POSITIONS":
+            ikeep = templ.index(a)
+            break
+
+    N = len(templ)
+    # Blank space for the atomic positions
+    templ[ikeep+1:N] = []
+    for i in xrange(ikeep+1):
+        print templ[i]
+
+
+    return  templ
+
+
+
+
 def excitation_to_qe_occ(params, state):
 ##
 # This function converts the Libra "excitation" object to the QE occupation scheme
@@ -107,7 +148,8 @@ def print_occupations(occ):
 # \param[in] occ Occupation scheme representing an excitation (list of floats/integers)
 #
     
-    line = "OCCUPATIONS\n"
+    #line = "OCCUPATIONS\n"
+    line = ""
     count = 0
     for f in occ:
         line = line + "%5.3f " % f 
@@ -120,17 +162,22 @@ def print_occupations(occ):
 
 
 
-def write_qe_input(qe_inp, label, mol, excitation, params):
+def write_qe_input(ex_st, label, mol, params,occ,occ_alp,occ_bet):
 ##
 # Creates the Quantum Espresso input using the data provided
-# \param[in] qe_inp The name of the input file we prepare
+# \param[in] ex_st The index of the excited state we want to compute - so it controls which input file
+# to create and how to do this
 # \param[in] label Element symbols for all atoms in the system (list of strings)
 # \param[in] mol The object containing nuclear DOF
-# \param[in] excitation The object of the "excitation" type, defining the SD configuration
 # \param[in] params The general control parameters (dictionary)
 #
 
-    qe_inp_templ = params["qe_inp_templ"]
+    HOMO = params["nel"]/2 - 1 # It must be integer, This is HOMO index
+    excitation = params["excitations"][ex_st]
+    qe_inp = "x%i.scf_wrk.in" % ex_st
+
+
+    qe_inp_templ = params["qe_inp_templ"][ex_st]
     cell_dm = params["alat"]
     pp = qe_inp.split('.')
     pfx = pp[0]
@@ -156,16 +203,69 @@ def write_qe_input(qe_inp, label, mol, excitation, params):
         z = B_to_A*mol.q[3*k+2]
         g.write("%s    %12.7f    %12.7f    %12.7f  \n"  % (atms, x, y, z) )
 
-    # Single excitations with no spin-polarization 
-    occ, occ_alp, occ_bet = excitation_to_qe_occ(params, excitation)
+####################################################
+#  Give conditional statement, if 
+#  if flag1 == -1:
+#      generate occupation number using fermi population
+#  elif flag1 == 0:
+#      continue the general sequence of writing input file       
+####################################################
+
+    # Write occupation
+    g.write(""+'\n')
+    g.write("OCCUPATIONS"+'\n')
+    # Single excitations with no spin-polarization
+
     if params["nspin"] <= 1:
         g.write(print_occupations(occ))
         g.write(""+'\n')
+    # Single excitations with spin-polarization 
     if params["nspin"] >1:
         g.write(print_occupations(occ_alp))
         g.write(""+'\n')
         g.write(print_occupations(occ_bet))
         
     g.close()
+
+def write_qe_input_first(filename,occ,occ_alp,occ_bet,nspin):
+    f = open(filename,"r+")
+    a = f.readlines()
+    N = len(a)
+    f.close()
+    f = open(filename, "w")
+    for i in range(0,N):
+        s = a[i].split()
+        if len(s)>0 and s[0] =="OCCUPATIONS":
+            i_alp = i+1
+    a[i_alp:N] = []
+
+    for i in range(0,i_alp):
+        f.write(a[i])
+
+    # Write occupation
+    # Single excitations with no spin-polarization
+    if nspin <= 1:
+        f.write(print_occupations(occ))
+        f.write(""+'\n')
+    # Single excitations with spin-polarization 
+    if nspin >1:
+        print "occ_alp=",occ_alp,"occ_bet=",occ_bet
+        f.write(print_occupations(occ_alp))
+        f.write(""+'\n')
+        f.write(print_occupations(occ_bet))
+
+    f.close()
+
+
+
+
+
+
+
+
+
+
+
+
 
 
