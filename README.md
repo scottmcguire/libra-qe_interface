@@ -1,5 +1,10 @@
-# Libra-GAMESS_interface
+# Libra-QuantumEspresso_interface
 
+   Getting started with libra-QE interface
+
+
+# Libra-GAMESS_interface
+   
    This file introduces how to execute Libra-GAMESS_interface.
 
 0. Install Libra and GAMESS on your PC or server.
