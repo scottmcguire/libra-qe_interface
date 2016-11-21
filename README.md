@@ -2,7 +2,8 @@
 
    Getting started with libra-QE interface
 
-
+----------------------------------------------
+----------------------------------------------
 # Libra-GAMESS_interface
    
    This file introduces how to execute Libra-GAMESS_interface.
