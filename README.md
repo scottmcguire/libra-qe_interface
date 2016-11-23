@@ -21,12 +21,6 @@
 1. Copy "run" to a working directory, name it as you like, say "run0". Go to "run0" directory.
 2. Create res, sd_ham, and mo_ham directories where results will be saved.
 3. Edit run_qe.py script as required. 
-<!-- Don’t remove or change the comment below – that can break automatic updates. More info at <http://npm.im/doxie.inject>. -->
-<!-- @doxie.inject end toc -->
-* [click for run_qe.py editing details](#click-for-run_qe.py-editing-details)
-
-<!-- @doxie.inject start -->
-<!-- Don’t remove or change the comment above – that can break automatic updates. -->
 4. Edit "x_i.scf.in", "x_i.exp.in" files, which are Quantum espresso input file for
    SCF and wavefunction export calculations respectively. "_i" extension for each of the electronic
    states included in the NAMD calculation.
@@ -88,12 +82,3 @@
 [Quantum Espresso]: <http://www.msg.ameslab.gov/gamess/>
 [Libra]: <http://www.acsu.buffalo.edu/~alexeyak/libra/index.html>
 [link1]: <http://www.acsu.buffalo.edu/~alexeyak/libra/installation.html>
-<!-- @doxie.inject start -->
-<!-- Don’t remove or change the comment above – that can break automatic updates. -->
-## click for run_qe.py editing details
-```sh
-These are the details that you should know about your systems and change
-run_qe.py file accordingly.
-```
-<!-- Don’t remove or change the comment below – that can break automatic updates. More info at <http://npm.im/doxie.inject>. -->
-<!-- @doxie.inject end -->
