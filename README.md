@@ -13,8 +13,17 @@
 
 ## Working with Libra-QuantumEspresso interface
    Go to libra-qe_interface. In this directory, you will find "src" and "run" folders.
- - src : Where all the source codes are placed.
- - run : Where submission script and run_qe.py scripts are placed. System specific details can be provided in the run_qe.py script.
+ - src : Where all the source codes are placed. You don't need to change any files in this directory. If new updates are
+         available, git pull will automatically update it.
+ - run : Contains submission and run scripts. System specific details can be provided in the run_qe.py script. 
+
+### Step-by-Step
+1. Copy run to a working directory, name it as you like, say run0
+2. Edit run_qe.py script as required.
+3. Edit x_i.scf.in,x_i.exp.in files, which are Quantum espresso input file for
+   SCF and wavefunction export calculations respectively.
+4. submit submit_templ_qe.slm submission script. If it is a small calculation, you can run on the head
+   node by just "python run_qe.py"
 
   
 ----------------------------------------------
