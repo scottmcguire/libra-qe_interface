@@ -5,7 +5,13 @@
    Libra and Quantum Espresso
    >Download and install [Libra] and [Quantum Espresso]  <br/>
    >Instructions for Libra installation are provided in Libra website [link1].
-   
+
+## Clone or Download libra-qe_interface
+   You can download ZIP file in to your computer or clone entire folder in to your local working directory.
+   > For cloning, - Copy path to clipboard, then go to your local working directory and type <br/>
+   > git clone path-of-libra-qe_interface <br/>
+
+  
 ----------------------------------------------
 ----------------------------------------------
 # Libra-GAMESS_interface
