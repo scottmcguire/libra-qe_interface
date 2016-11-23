@@ -3,7 +3,7 @@
    Getting started with libra-QE interface
 ## Required softwares
    Libra and Quantum Espresso
-   >Download and install Libra (http://www.acsu.buffalo.edu/~alexeyak/libra/index.html) and Quantum Espresso (http://www.msg.ameslab.gov/gamess/) <br/>
+   >Download and install [Libra] and [Quantum Espresso]  <br/>
    >Instructions for Libra installation are provided in Libra website [link1].
    
 ----------------------------------------------
@@ -57,5 +57,6 @@
    
 8. After the calculation finished, the results will be set in "res" directory.
 
-
+[Quantum Espresso]: <http://www.msg.ameslab.gov/gamess/>
+[Libra]: <http://www.acsu.buffalo.edu/~alexeyak/libra/index.html>
 [link1]: <http://www.acsu.buffalo.edu/~alexeyak/libra/installation.html>
