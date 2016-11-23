@@ -1,7 +1,9 @@
 # Libra-QuantumEspresso_interface
 
    Getting started with libra-QE interface
-
+## Required softwares
+   Libra and Quantum Espresso
+   
 ----------------------------------------------
 ----------------------------------------------
 # Libra-GAMESS_interface
