@@ -23,7 +23,7 @@
 3. Edit run_qe.py script as required. 
 <!-- Don’t remove or change the comment below – that can break automatic updates. More info at <http://npm.im/doxie.inject>. -->
 <!-- @doxie.inject end toc -->
-[click for run_qe.py editing details](#click-for-run_qe.py-editing-details)
+* [click for run_qe.py editing details](#click-for-run_qe.py-editing-details)
 
 <!-- @doxie.inject start -->
 <!-- Don’t remove or change the comment above – that can break automatic updates. -->
