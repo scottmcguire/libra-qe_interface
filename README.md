@@ -8,8 +8,13 @@
 
 ## Clone or Download libra-qe_interface
    You can download ZIP file in to your computer or clone entire folder in to your local working directory.
-   > For cloning, - Copy path to clipboard, then go to your local working directory and type <br/>
+   > For cloning, Copy path to clipboard, then go to your local working directory and type <br/>
    > git clone path-of-libra-qe_interface <br/>
+
+## Working with Libra-QuantumEspresso interface
+   Go to libra-qe_interface. In this directory, you will find "src" and "run" folders.
+ - src : Where all the source codes are placed.
+ - run : Where submission script and run_qe.py scripts are placed. System specific details can be provided in the run_qe.py script.
 
   
 ----------------------------------------------
