@@ -4,7 +4,7 @@
 ## Required softwares
    Libra and Quantum Espresso
    >Download and install Libra (http://www.acsu.buffalo.edu/~alexeyak/libra/index.html) and Quantum Espresso (http://www.msg.ameslab.gov/gamess/)
-   >Instructions for Libra installation are provided in Libra website [link1].
+   Instructions for Libra installation are provided in Libra website [link1].
    
 ----------------------------------------------
 ----------------------------------------------
