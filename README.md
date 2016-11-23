@@ -3,6 +3,7 @@
    Getting started with libra-QE interface
 ## Required softwares
    Libra and Quantum Espresso
+   >Download and install Libra(http://www.acsu.buffalo.edu/~alexeyak/libra/index.html) and Quantum Espresso (http://www.msg.ameslab.gov/gamess/)
    
 ----------------------------------------------
 ----------------------------------------------
