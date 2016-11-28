@@ -33,6 +33,16 @@
 ```sh
 There are many system specific parameters in thi run_qe.py script
 and they are presented as params["name-of-the-parameter"]
+
+ - Create a new use index number. Specify "libra_bin_path" and "libra_qe_int_path" for the user.
+ - Description of other simulation parameters such as number of processors, number of snaps, nuclear time step, etc., are
+   provided in the run_qe.py script.
+ - One of the most important parameters is params["excitations"] which is constructed by excitation() object.
+   This excitation() objct takes four integer arguments for a specific electronic state. From orbital(fo) from spin(fs) to orbital(to) to spin(ts).
+   As an example, excitation(0101) presents S0 (ground state), excitation(0111) define S1 excited state. Here, orbital numbering starts from HOMO (0).
+   Alpha (up) spin labeled as 1 and beta (down) spin indexed as -1.
+
+   
 ```
 
 ----------------------------------------------
