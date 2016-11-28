@@ -27,6 +27,7 @@
    states included in the NAMD calculation.
 5. submit submit_templ_qe.slm submission script. If it is a small calculation, you can run on the head
    node by just "python run_qe.py"
+6. Upon completion of caculation, results will be printed in res and sd_ham folders.
 
   
 
