@@ -20,7 +20,7 @@
 ### Step-by-Step
 1. Copy "run" to a working directory, name it as you like, say "run0". Go to "run0" directory.
 2. Create res, sd_ham, and mo_ham directories where results will be saved.
-3. Edit run_qe.py script as required. ([How To Edit Run-qe.py](#how to edit run-qe.py))
+3. Edit run_qe.py script as required. ([How To Edit](#how-to-edit))
 4. Edit "x_i.scf.in", "x_i.exp.in" files, which are Quantum espresso input file for
    SCF and wavefunction export calculations respectively. "_i" extension for each of the electronic
    states included in the NAMD calculation.
@@ -29,7 +29,7 @@
 
   
 
-## How To Edit Run-qe.py
+## How To Edit
 ```sh
 There are many system specific parameters in thi run_qe.py script
 and they are presented as params["name-of-the-parameter"]
