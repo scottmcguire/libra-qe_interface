@@ -21,8 +21,9 @@
 1. Copy "run" to a working directory, name it as you like, say "run0". Go to "run0" directory.
 2. Create res, sd_ham, and mo_ham directories where results will be saved.
 3. Edit run_qe.py script as required. ([How To Edit Run Script](#how-to-edit-run-script))
-4. Edit "x_i.scf.in", "x_i.exp.in" files, which are Quantum espresso input file for
-   SCF and wavefunction export calculations respectively. "_i" extension for each of the electronic
+4. Edit "x_i.scf.in", "x_i.exp.in" files. ([Editing QE Input Files](#editing-qe-input-files))
+   These are Quantum espresso input file for SCF and wavefunction export 
+   calculations respectively. "_i" extension for each of the electronic
    states included in the NAMD calculation.
 5. submit submit_templ_qe.slm submission script. If it is a small calculation, you can run on the head
    node by just "python run_qe.py"
@@ -47,6 +48,23 @@ and they are presented as params["name-of-the-parameter"]
      (down) spin indexed as -1.
  
    
+```
+
+## Editing QE Input Files
+```sh
+While most of the Quantum Espresso input documentation are available in 
+their website, some important requirement for libra-QE are given here.
+ - pseudo_dir = 'path of pseudo potential files',
+ - prefix = 'xi', i varies for different electronic states, eg., for S0, pseudo_dir = "x0" 
+ - nspin = 2, this is for spin polarized calculation
+ - K_POINTS automatic, For current version, later it will be extended for gamma points.
+   1 1 1  0 0 0
+ - OCCUPATIONS, This is the most important input specification for Delta-SCF calculation
+   Alpha and beta spins orbitals occupations are provided. Single line break is requred between them.
+   Although integer occupation number is provided, if SCF does not converge due
+   to degeneracy problem or multireference character of the electronic wavefunction, a fermi 
+   population is considered and calculation is restarted. This is done automatiocally in the main
+   script.
 ```
 
 ----------------------------------------------
