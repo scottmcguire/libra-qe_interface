@@ -66,6 +66,7 @@ their website, some important requirement for libra-QE are given here.
    to degeneracy problem or multireference character of the electronic wavefunction, a fermi 
    population is considered and calculation is restarted. This is done automatiocally in the main
    script.
+   QUESTION: How do I prepare xi.exp.in file for wavefunction export calculation using Quantum Espresso?
 ```
 
 ----------------------------------------------
